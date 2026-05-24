@@ -108,12 +108,12 @@
         .btn-group-right { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
         .btn-text { background: transparent; border: none; color: #008080; font-weight: 500; font-size: 0.7rem; cursor: pointer; padding: 5px 10px; border-radius: 20px; }
         .btn-filter { background: #008080; border: none; color: white; padding: 6px 14px; border-radius: 25px; font-size: 0.7rem; cursor: pointer; font-weight: 500; }
-        .icon-btn { background: transparent; border: none; font-size: 0.9rem; cursor: pointer; padding: 4px; border-radius: 8px; width: 30px; height: 30px; }
+        .icon-btn { background: transparent; border: none; font-size: 1rem; cursor: pointer; padding: 6px; border-radius: 8px; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .icon-btn:active { transform: scale(0.94); background: #eef2f8; }
         .icon-excel { color: #1e6f3f; }
         .icon-print { color: #6c757d; }
-        .sync-btn { background: #008080; border: none; color: white; padding: 5px 10px; border-radius: 20px; cursor: pointer; font-size: 0.65rem; }
-        .sync-btn-qr { background: #6c5ce7; }
-        .sync-btn-wa { background: #25D366; }
+        .icon-scan { color: #6c5ce7; background: #f0eefc; }
+        .icon-scan:hover { background: #e0dcf7; }
         
         .table-responsive { overflow-x: auto; margin-top: 6px; border-radius: 12px; border: 1px solid #eef2f6; }
         table { width: 100%; border-collapse: collapse; font-size: 0.7rem; min-width: 600px; }
@@ -203,11 +203,48 @@
             transition: all 0.1s;
             background: #eef2f8;
         }
-        .operator-edit:active, .operator-delete:active {
-            transform: scale(0.95);
-        }
+        .operator-edit:active, .operator-delete:active { transform: scale(0.95); }
         .operator-edit { color: #008080; }
         .operator-delete { color: #e65100; }
+        
+        .permission-request {
+            background: #fff3e0;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 1px solid #ffe0b2;
+        }
+        .permission-request h4 {
+            color: #ef6c00;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+        .permission-request p {
+            font-size: 0.75rem;
+            color: #666;
+            margin-bottom: 16px;
+        }
+        .permission-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .permission-buttons button {
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            border: none;
+        }
+        .permission-allow {
+            background: #008080;
+            color: white;
+        }
+        .permission-deny {
+            background: #e0e0e0;
+            color: #666;
+        }
         
         .scanner-container { width: 100%; max-width: 400px; margin: 0 auto; border-radius: 20px; overflow: hidden; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
         #qr-reader { width: 100%; position: relative; }
@@ -333,10 +370,7 @@
             .operator-name { font-size: 0.75rem; }
             .operator-edit, .operator-delete { padding: 4px 8px; font-size: 0.75rem; }
             .scanner-container { max-width: 100%; }
-            @keyframes pulseRing {
-                0% { width: 40px; height: 40px; }
-                100% { width: 150px; height: 150px; }
-            }
+            .icon-btn { width: 30px; height: 30px; font-size: 0.9rem; }
         }
     </style>
 </head>
@@ -381,6 +415,16 @@
     <div class="modal-content" style="max-width: 480px;">
         <h3 style="display: flex; align-items: center; gap: 8px;">📷 Scan QR Code Operator</h3>
         <p style="font-size:0.7rem; margin:8px 0 16px 0; color:#666;">Arahkan kamera ke QR Code yang ditampilkan operator</p>
+        
+        <div id="cameraPermissionRequest" class="permission-request" style="display: none;">
+            <h4>📷 Izin Akses Kamera</h4>
+            <p>Aplikasi memerlukan akses kamera untuk memindai QR Code dari operator. Kamera akan digunakan hanya untuk scanning.</p>
+            <div class="permission-buttons">
+                <button id="allowCameraBtn" class="permission-allow">✅ Izinkan Akses</button>
+                <button id="denyCameraBtn" class="permission-deny">❌ Tolak</button>
+            </div>
+        </div>
+        
         <div style="position: relative;" class="scanner-container" id="scannerContainer">
             <div id="qr-reader"></div>
             <div class="scanner-overlay" id="scannerOverlay" style="display: none;">
@@ -396,7 +440,7 @@
         <div id="scanStatus" class="scan-status" style="display:none;"></div>
         <div class="footer-modal" style="justify-content: center; gap: 16px; margin-top: 20px;">
             <button class="scanner-btn scanner-btn-stop" id="stopScanBtn" style="display: none;">⏹️ Hentikan Scan</button>
-            <button class="scanner-btn" id="startScanBtn">📷 Mulai Scan Kamera</button>
+            <button class="scanner-btn" id="startScanBtn" style="display: none;">📷 Mulai Scan Kamera</button>
             <button class="btn-text" id="closeScanModalBtn" style="padding: 10px 16px;">Tutup</button>
         </div>
     </div>
@@ -421,6 +465,7 @@
     let currentMenu = "daily-activity";
     let html5QrCode = null;
     let isScanning = false;
+    let cameraPermissionGranted = false;
     
     const allDivisions = ["Leader", "Raw Material", "Finish Goods", "Save Material"];
     
@@ -553,6 +598,31 @@
     function formatDateToStorage(date) { return date.toISOString().slice(0,10); }
     function calculateDuration(start,end) { if(!start||!end) return "-"; let startDate = new Date(`2000-01-01T${start}`); let endDate = new Date(`2000-01-01T${end}`); let diff = (endDate-startDate)/(1000*60); if(diff<0) diff+=24*60; return `${Math.floor(diff/60)} jam ${diff%60} menit`; }
     
+    async function checkCameraPermission() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            stream.getTracks().forEach(track => track.stop());
+            cameraPermissionGranted = true;
+            return true;
+        } catch (err) {
+            cameraPermissionGranted = false;
+            return false;
+        }
+    }
+    
+    async function requestCameraPermission() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            stream.getTracks().forEach(track => track.stop());
+            cameraPermissionGranted = true;
+            return true;
+        } catch (err) {
+            console.error("Camera permission denied:", err);
+            cameraPermissionGranted = false;
+            return false;
+        }
+    }
+    
     async function startScanner() {
         const scanStatus = document.getElementById("scanStatus");
         const scannerOverlay = document.getElementById("scannerOverlay");
@@ -565,14 +635,15 @@
             if(scannerOverlay) scannerOverlay.style.display = "none";
         }
         
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            stream.getTracks().forEach(track => track.stop());
-        } catch(err) {
-            scanStatus.style.display = "block";
-            scanStatus.innerHTML = "❌ Tidak dapat mengakses kamera. Izinkan akses kamera.";
-            scanStatus.className = "scan-status scan-error";
-            return;
+        const hasPermission = await checkCameraPermission();
+        if (!hasPermission) {
+            const granted = await requestCameraPermission();
+            if (!granted) {
+                scanStatus.style.display = "block";
+                scanStatus.innerHTML = "❌ Akses kamera diperlukan untuk scan QR Code. Silakan izinkan akses kamera di pengaturan browser.";
+                scanStatus.className = "scan-status scan-error";
+                return;
+            }
         }
         
         html5QrCode = new Html5Qrcode("qr-reader");
@@ -594,7 +665,7 @@
             );
         } catch(err) {
             scanStatus.style.display = "block";
-            scanStatus.innerHTML = "❌ Gagal memulai kamera.";
+            scanStatus.innerHTML = "❌ Gagal memulai kamera. Pastikan perangkat memiliki kamera.";
             scanStatus.className = "scan-status scan-error";
             isScanning = false;
             if(scannerOverlay) scannerOverlay.style.display = "none";
@@ -630,7 +701,7 @@
         try {
             const qrData = JSON.parse(decodedText);
             if(qrData.type !== "QR_SYNC") { 
-                showScanStatus("❌ QR Code tidak valid!", "scan-error", true);
+                showScanStatus("❌ QR Code tidak valid! Pastikan QR dari aplikasi WarehousePro.", "scan-error", true);
                 return; 
             }
             
@@ -688,14 +759,14 @@
         else if(currentMenu === "consumable") renderConsumable();
     }
     
+    // ========== RENDER SYNC SECTION DENGAN ICON SCAN DI ATAS ==========
     function renderSyncSection() {
         return `<div style="background:#e8f5e9; border-radius:14px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:auto;">
                     <div style="font-size:0.65rem; font-weight:600; color:#2e7d32;">📡 Sinkronisasi</div>
                     <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                        <button class="sync-btn sync-btn-qr" id="openScanModalBtn" style="background:linear-gradient(135deg, #6c5ce7, #5a4fcf);">📷 Scan QR Operator</button>
-                        <button class="sync-btn" id="exportDataBtn">📤 Export</button>
-                        <button class="sync-btn sync-btn-wa" id="shareWAbtn">💬 Share</button>
-                        <button class="sync-btn" id="importDataBtn">📥 Import</button>
+                        <button class="icon-btn icon-excel" id="exportDataBtn" title="Export Data">📤</button>
+                        <button class="icon-btn icon-print" id="shareWAbtn" title="Share via WhatsApp">💬</button>
+                        <button class="icon-btn" id="importDataBtn" title="Import Data">📥</button>
                     </div>
                 </div>`;
     }
@@ -706,6 +777,7 @@
                             <div class="section-title">
                                 <span>👥 Daftar Operator</span>
                                 <div class="btn-group-right">
+                                    <button class="icon-btn icon-scan" id="openScanModalBtn" title="Scan QR Code Operator" style="background:#6c5ce7; color:white; width:auto; padding:0 16px; gap:6px;">📷 Scan QR</button>
                                     <button class="btn-text" id="addOperatorBtn" style="background:#008080; color:white; padding:6px 14px;">+ Tambah Operator</button>
                                 </div>
                             </div>
@@ -734,6 +806,7 @@
         document.getElementById("pageDesc").innerText = "Tambah, edit, atau hapus data operator";
         
         document.getElementById("addOperatorBtn")?.addEventListener("click", () => openOperatorFormModal());
+        document.getElementById("openScanModalBtn")?.addEventListener("click", () => openScanModal());
         
         document.querySelectorAll(".operator-edit").forEach(el => {
             el.addEventListener("click", () => {
@@ -774,10 +847,39 @@
             <td><span class="badge">${act.duration}</span></td>
             <td>${act.description||'-'}</td>
             <td class="action-icons"><span class="edit-icon" data-id="${act.id}">✏️</span><span class="delete-icon" data-id="${act.id}">🗑️</span></td>
-        </table>`).join('');
+        </tr>`).join('');
         if(filtered.length === 0) tableRows = `<tr><td colspan="7" style="text-align:center; padding:24px;">✨ Belum ada aktivitas</td></tr>`;
         
-        let html = `<div class="scrollable-content"><div class="card-panel"><div class="section-title"><span>📋 Daily Activity - ${toDisplayDate(currentViewDate)}</span><div class="btn-group-right"><button class="icon-btn icon-excel" id="exportExcelBtn">📎</button><button class="icon-btn icon-print" id="printBtn">🖨️</button><button class="btn-text" id="addActivityBtn">+ Tambah</button></div></div><div class="division-tabs">${divisionTabs}</div>${workerSubtabs}<div class="table-responsive"><table><thead><tr><th>Pekerja</th><th>Aktivitas</th><th>Mulai</th><th>Selesai</th><th>Durasi</th><th>Keterangan</th><th>Aksi</th></tr></thead><tbody>${tableRows}</tbody></table></div></div><div class="date-navigator"><button class="date-nav-btn" id="prevDateBtn">◀ Sebelumnya</button><span class="current-date-display">${toDisplayDate(currentViewDate)}<span class="daily-tag">Harian</span></span><button class="date-nav-btn" id="nextDateBtn">Berikutnya ▶</button><button class="date-nav-btn" id="todayDateBtn">📅 Hari Ini</button></div></div>${renderSyncSection()}`;
+        let html = `<div class="scrollable-content">
+                        <div class="card-panel">
+                            <div class="section-title">
+                                <span>📋 Daily Activity - ${toDisplayDate(currentViewDate)}</span>
+                                <div class="btn-group-right">
+                                    <button class="icon-btn icon-scan" id="openScanModalBtn" title="Scan QR Code Operator" style="background:#6c5ce7; color:white;">📷</button>
+                                    <button class="icon-btn icon-excel" id="exportExcelBtn" title="Export ke Excel">📎</button>
+                                    <button class="icon-btn icon-print" id="printBtn" title="Cetak">🖨️</button>
+                                    <button class="btn-text" id="addActivityBtn" style="background:#008080; color:white; padding:6px 14px;">+ Tambah</button>
+                                </div>
+                            </div>
+                            <div class="division-tabs">${divisionTabs}</div>
+                            ${workerSubtabs}
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr><th>Pekerja</th><th>Aktivitas</th><th>Mulai</th><th>Selesai</th><th>Durasi</th><th>Keterangan</th><th>Aksi</th></tr>
+                                    </thead>
+                                    <tbody>${tableRows}</tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="date-navigator">
+                            <button class="date-nav-btn" id="prevDateBtn">◀ Sebelumnya</button>
+                            <span class="current-date-display">${toDisplayDate(currentViewDate)}<span class="daily-tag">Harian</span></span>
+                            <button class="date-nav-btn" id="nextDateBtn">Berikutnya ▶</button>
+                            <button class="date-nav-btn" id="todayDateBtn">📅 Hari Ini</button>
+                        </div>
+                    </div>
+                    ${renderSyncSection()}`;
         document.getElementById("appContainer").innerHTML = html;
         document.getElementById("pageTitle").innerText = "Daily Activity";
         document.getElementById("pageDesc").innerText = "Admin - Data Harian";
@@ -790,12 +892,12 @@
         document.getElementById("prevDateBtn")?.addEventListener("click", () => changeDate(-1));
         document.getElementById("nextDateBtn")?.addEventListener("click", () => changeDate(1));
         document.getElementById("todayDateBtn")?.addEventListener("click", goToToday);
+        document.getElementById("openScanModalBtn")?.addEventListener("click", () => openScanModal());
         document.querySelectorAll(".edit-icon").forEach(icon => { let id = parseInt(icon.dataset.id); let act = getActivitiesByDate(currentViewDate).find(a => a.id === id); if(act) icon.addEventListener("click", () => openActivityModal(id, act.division, act.workerName, toDisplayDate(currentViewDate), act.activity, act.startTime, act.endTime, act.description)); });
         document.querySelectorAll(".delete-icon").forEach(icon => icon.addEventListener("click", () => { if(confirm("Hapus aktivitas?")) deleteActivityFromDate(currentViewDate, parseInt(icon.dataset.id)); renderAdminDailyActivity(); }));
         attachSyncEvents();
     }
     
-    // PERBAIKAN: TABEL BARANG MASUK
     function renderStockIn() {
         let tableRows = '';
         for(let i = 0; i < stockInEntries.length; i++) {
@@ -823,17 +925,16 @@
                             <div class="section-title">
                                 <span>📥 Barang Masuk</span>
                                 <div class="btn-group-right">
-                                    <button class="icon-btn icon-excel" id="exportStockInExcelBtn">📎</button>
-                                    <button class="icon-btn icon-print" id="printStockInBtn">🖨️</button>
+                                    <button class="icon-btn icon-scan" id="openScanModalBtn" title="Scan QR Code Operator" style="background:#6c5ce7; color:white;">📷</button>
+                                    <button class="icon-btn icon-excel" id="exportStockInExcelBtn" title="Export ke Excel">📎</button>
+                                    <button class="icon-btn icon-print" id="printStockInBtn" title="Cetak">🖨️</button>
                                     <button class="btn-text" id="addStockInBtn" style="background:#008080; color:white; padding:6px 14px;">+ Tambah</button>
                                 </div>
                             </div>
                             <div class="table-responsive">
                                 <table>
                                     <thead>
-                                        <tr>
-                                            <th>Tanggal</th><th>Jam</th><th>Deskripsi</th><th>Supplier</th><th>No PO</th><th>No SJ</th><th>Jumlah</th><th>Satuan</th><th>Keterangan</th><th>PIC</th><th>Aksi</th>
-                                        </tr>
+                                        <tr><th>Tanggal</th><th>Jam</th><th>Deskripsi</th><th>Supplier</th><th>No PO</th><th>No SJ</th><th>Jumlah</th><th>Satuan</th><th>Keterangan</th><th>PIC</th><th>Aksi</th></tr>
                                     </thead>
                                     <tbody>${tableRows}</tbody>
                                 </table>
@@ -849,6 +950,7 @@
         document.getElementById("addStockInBtn")?.addEventListener("click", () => openStockInModal());
         document.getElementById("exportStockInExcelBtn")?.addEventListener("click", () => exportToExcelStockIn());
         document.getElementById("printStockInBtn")?.addEventListener("click", () => window.print());
+        document.getElementById("openScanModalBtn")?.addEventListener("click", () => openScanModal());
         
         document.querySelectorAll(".edit-icon[data-type='in']").forEach(icon => {
             icon.addEventListener("click", () => openStockInModal(parseInt(icon.dataset.id)));
@@ -866,7 +968,7 @@
         let tableRows = '';
         for(let i = 0; i < stockOutEntries.length; i++) {
             let s = stockOutEntries[i];
-            tableRows += `<tr>
+            tableRows += `<table>
                 <td>${toDisplayDate(s.tanggal)}</td>
                 <td>${s.jam}</td>
                 <td>${s.deskripsi}</td>
@@ -888,17 +990,16 @@
                             <div class="section-title">
                                 <span>📤 Barang Keluar</span>
                                 <div class="btn-group-right">
-                                    <button class="icon-btn icon-excel" id="exportStockOutExcelBtn">📎</button>
-                                    <button class="icon-btn icon-print" id="printStockOutBtn">🖨️</button>
+                                    <button class="icon-btn icon-scan" id="openScanModalBtn" title="Scan QR Code Operator" style="background:#6c5ce7; color:white;">📷</button>
+                                    <button class="icon-btn icon-excel" id="exportStockOutExcelBtn" title="Export ke Excel">📎</button>
+                                    <button class="icon-btn icon-print" id="printStockOutBtn" title="Cetak">🖨️</button>
                                     <button class="btn-text" id="addStockOutBtn" style="background:#008080; color:white; padding:6px 14px;">+ Tambah</button>
                                 </div>
                             </div>
                             <div class="table-responsive">
                                 <table>
                                     <thead>
-                                        <tr>
-                                            <th>Tanggal</th><th>Jam</th><th>Deskripsi</th><th>Jumlah</th><th>Satuan</th><th>Ekspedisi</th><th>User</th><th>Keterangan</th><th>PIC</th><th>Aksi</th>
-                                        </tr>
+                                        <tr><th>Tanggal</th><th>Jam</th><th>Deskripsi</th><th>Jumlah</th><th>Satuan</th><th>Ekspedisi</th><th>User</th><th>Keterangan</th><th>PIC</th><th>Aksi</th></tr>
                                     </thead>
                                     <tbody>${tableRows}</tbody>
                                 </table>
@@ -914,6 +1015,7 @@
         document.getElementById("addStockOutBtn")?.addEventListener("click", () => openStockOutModal());
         document.getElementById("exportStockOutExcelBtn")?.addEventListener("click", () => exportToExcelStockOut());
         document.getElementById("printStockOutBtn")?.addEventListener("click", () => window.print());
+        document.getElementById("openScanModalBtn")?.addEventListener("click", () => openScanModal());
         
         document.querySelectorAll(".edit-icon[data-type='out']").forEach(icon => {
             icon.addEventListener("click", () => openStockOutModal(parseInt(icon.dataset.id)));
@@ -951,17 +1053,16 @@
                             <div class="section-title">
                                 <span>📦 Barang Konsumabel</span>
                                 <div class="btn-group-right">
-                                    <button class="icon-btn icon-excel" id="exportConsumableExcelBtn">📎</button>
-                                    <button class="icon-btn icon-print" id="printConsumableBtn">🖨️</button>
+                                    <button class="icon-btn icon-scan" id="openScanModalBtn" title="Scan QR Code Operator" style="background:#6c5ce7; color:white;">📷</button>
+                                    <button class="icon-btn icon-excel" id="exportConsumableExcelBtn" title="Export ke Excel">📎</button>
+                                    <button class="icon-btn icon-print" id="printConsumableBtn" title="Cetak">🖨️</button>
                                     <button class="btn-text" id="addConsumableBtn" style="background:#008080; color:white; padding:6px 14px;">+ Tambah</button>
                                 </div>
                             </div>
                             <div class="table-responsive">
                                 <table>
                                     <thead>
-                                        <tr>
-                                            <th>Tanggal</th><th>Deskripsi</th><th>Jumlah</th><th>Satuan</th><th>Keterangan</th><th>User</th><th>PIC</th><th>Aksi</th>
-                                        </tr>
+                                        <tr><th>Tanggal</th><th>Deskripsi</th><th>Jumlah</th><th>Satuan</th><th>Keterangan</th><th>User</th><th>PIC</th><th>Aksi</th></tr>
                                     </thead>
                                     <tbody>${tableRows}</tbody>
                                 </table>
@@ -977,6 +1078,7 @@
         document.getElementById("addConsumableBtn")?.addEventListener("click", () => openConsumableModal());
         document.getElementById("exportConsumableExcelBtn")?.addEventListener("click", () => exportToExcelConsumable());
         document.getElementById("printConsumableBtn")?.addEventListener("click", () => window.print());
+        document.getElementById("openScanModalBtn")?.addEventListener("click", () => openScanModal());
         
         document.querySelectorAll(".edit-icon[data-type='con']").forEach(icon => {
             icon.addEventListener("click", () => openConsumableModal(parseInt(icon.dataset.id)));
@@ -988,6 +1090,25 @@
         });
         
         attachSyncEvents();
+    }
+    
+    function openScanModal() {
+        document.getElementById("scanQRModal").style.display = "flex";
+        document.getElementById("startScanBtn").style.display = "inline-flex";
+        document.getElementById("stopScanBtn").style.display = "none";
+        document.getElementById("scannerOverlay").style.display = "none";
+        
+        const permissionDiv = document.getElementById("cameraPermissionRequest");
+        if(permissionDiv) permissionDiv.style.display = "none";
+        
+        checkCameraPermission().then(hasPermission => {
+            if(hasPermission) {
+                document.getElementById("startScanBtn").style.display = "inline-flex";
+            } else {
+                document.getElementById("cameraPermissionRequest").style.display = "block";
+                document.getElementById("startScanBtn").style.display = "none";
+            }
+        });
     }
     
     function exportToExcel() {
@@ -1041,12 +1162,22 @@
     }
     
     function attachSyncEvents() {
-        document.getElementById("openScanModalBtn")?.addEventListener("click", () => { 
-            document.getElementById("scanQRModal").style.display = "flex"; 
-            document.getElementById("startScanBtn").style.display = "inline-flex";
-            document.getElementById("stopScanBtn").style.display = "none";
-            document.getElementById("scannerOverlay").style.display = "none";
+        document.getElementById("allowCameraBtn")?.addEventListener("click", async () => {
+            const granted = await requestCameraPermission();
+            if(granted) {
+                document.getElementById("cameraPermissionRequest").style.display = "none";
+                document.getElementById("startScanBtn").style.display = "inline-flex";
+                alert("Akses kamera berhasil! Silakan klik 'Mulai Scan Kamera' untuk memulai.");
+            } else {
+                alert("Akses kamera ditolak. Scan QR Code tidak dapat dilakukan tanpa akses kamera.");
+            }
         });
+        
+        document.getElementById("denyCameraBtn")?.addEventListener("click", () => {
+            document.getElementById("cameraPermissionRequest").style.display = "none";
+            alert("Akses kamera ditolak. Anda tidak dapat menggunakan fitur scan QR Code.");
+        });
+        
         document.getElementById("startScanBtn")?.addEventListener("click", () => startScanner());
         document.getElementById("stopScanBtn")?.addEventListener("click", () => stopScanner());
         document.getElementById("closeScanModalBtn")?.addEventListener("click", () => { stopScanner(); document.getElementById("scanQRModal").style.display = "none"; });
