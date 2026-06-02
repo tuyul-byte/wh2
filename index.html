@@ -719,6 +719,18 @@
         .import-area:hover {
             background: #f0f8ff;
         }
+        
+        .qr-transfer-container {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+        }
+        
+        .qr-transfer-container img {
+            display: block;
+            margin: 0 auto;
+        }
     </style>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
@@ -944,35 +956,40 @@
         element.appendChild(img);
     }
     
-    // ==================== FITUR TRANSFER DATA MULTI DEVICE ====================
+    // ==================== FITUR TRANSFER DATA ANTAR PERANGKAT ====================
     
-    // Export data untuk dikirim
+    // Export data untuk dikirim (dengan kompresi)
     function getExportData() {
+        const userReports = reports.filter(r => r.operator === currentUser.username);
         return {
-            reports: reports.filter(r => r.operator === currentUser.username),
+            type: 'TRANSFER_DATA',
+            version: '1.0',
+            reports: userReports,
             operatorName: currentUser.name,
             operatorDivisi: currentUser.divisi,
             exportDate: new Date().toISOString(),
-            totalLaporan: reports.filter(r => r.operator === currentUser.username).length
+            totalLaporan: userReports.length
         };
     }
     
-    // Kirim via WhatsApp
+    // Kirim via WhatsApp (dengan data kompres)
     function sendViaWhatsApp() {
         const data = getExportData();
-        const dataStr = JSON.stringify(data, null, 2);
+        const dataStr = JSON.stringify(data);
+        // Kompres data agar tidak terlalu panjang untuk QR
         const compressedData = btoa(encodeURIComponent(dataStr));
         
-        const message = `📊 *LAPORAN HARIAN - ${currentUser.name}*\n` +
+        const message = `📊 *TRANSFER DATA LAPORAN - ${currentUser.name}*\n` +
                        `📅 Tanggal: ${new Date().toLocaleDateString('id')}\n` +
                        `🕐 Waktu: ${new Date().toLocaleTimeString('id')}\n` +
                        `📋 Divisi: ${currentUser.divisi}\n` +
                        `📝 Total Laporan: ${data.totalLaporan}\n\n` +
                        `*CARA IMPORT:*\n` +
                        `1. Login sebagai Admin\n` +
-                       `2. Klik "📥 Import Data" di panel Admin\n` +
-                       `3. Pilih "Paste dari Clipboard" atau upload file\n\n` +
-                       `*KODE DATA (copy-paste):*\n\`\`\`\n${compressedData}\n\`\`\``;
+                       `2. Klik "📥 Import Data"\n` +
+                       `3. Pilih "Paste dari Clipboard"\n` +
+                       `4. Tempel kode di bawah ini\n\n` +
+                       `*KODE DATA:*\n${compressedData}`;
         
         const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
@@ -981,26 +998,23 @@
     // Kirim via Email
     function sendViaEmail() {
         const data = getExportData();
-        const dataStr = JSON.stringify(data, null, 2);
+        const dataStr = JSON.stringify(data);
+        const compressedData = btoa(encodeURIComponent(dataStr));
         
-        let emailBody = `LAPORAN HARIAN ${currentUser.name}\n`;
+        let emailBody = `TRANSFER DATA LAPORAN HARIAN\n`;
+        emailBody += `========================\n\n`;
+        emailBody += `Operator: ${currentUser.name}\n`;
         emailBody += `Divisi: ${currentUser.divisi}\n`;
         emailBody += `Tanggal Export: ${new Date().toLocaleString('id')}\n`;
-        emailBody += `========================================\n\n`;
+        emailBody += `Total Laporan: ${data.totalLaporan}\n\n`;
+        emailBody += `CARA IMPORT:\n`;
+        emailBody += `1. Login sebagai Admin\n`;
+        emailBody += `2. Klik "📥 Import Data"\n`;
+        emailBody += `3. Pilih "Paste dari Clipboard"\n`;
+        emailBody += `4. Tempel kode di bawah ini\n\n`;
+        emailBody += `KODE DATA:\n${compressedData}`;
         
-        data.reports.forEach(r => {
-            emailBody += `📅 Tanggal: ${r.tanggal}\n`;
-            emailBody += `📝 Aktivitas: ${r.aktivitas || '-'}\n`;
-            emailBody += `⏰ Jam: ${r.mulai || '-'} - ${r.selesai || '-'}\n`;
-            emailBody += `⏱️ Total: ${r.totalJam} jam\n`;
-            emailBody += `📊 Status: ${r.status}\n`;
-            emailBody += `🔄 Sync: ${r.synced ? 'Sudah' : 'Belum'}\n`;
-            emailBody += `----------------------------------------\n\n`;
-        });
-        
-        emailBody += `\n\n=== DATA IMPORT (copy-paste ke admin) ===\n${btoa(encodeURIComponent(dataStr))}`;
-        
-        const mailtoUrl = `mailto:?subject=Laporan%20Harian%20${currentUser.name}&body=${encodeURIComponent(emailBody)}`;
+        const mailtoUrl = `mailto:?subject=Transfer%20Data%20Laporan%20${currentUser.name}&body=${encodeURIComponent(emailBody)}`;
         window.open(mailtoUrl, '_blank');
     }
     
@@ -1014,7 +1028,6 @@
             await navigator.clipboard.writeText(compressedData);
             alert('✅ Data berhasil disalin ke clipboard!\n\nPastekan ke Admin untuk di-import.');
         } catch (err) {
-            // Fallback
             const textarea = document.createElement('textarea');
             textarea.value = compressedData;
             document.body.appendChild(textarea);
@@ -1025,19 +1038,21 @@
         }
     }
     
-    // Generate QR Transfer (DIPERBAIKI - menggunakan API quickchart.io)
+    // Generate QR Transfer - QR berisi data laporan lengkap
     function generateTransferQR() {
         const data = getExportData();
         const dataStr = JSON.stringify(data);
-        const encodedData = btoa(encodeURIComponent(dataStr));
-        const qrText = `TRANSFER_DATA:${encodedData}`;
+        // Kompres data untuk QR
+        const compressedData = btoa(encodeURIComponent(dataStr));
+        const qrText = `TRANSFER_DATA:${compressedData}`;
         
         const modalHtml = `
             <div id="transferModal" class="modal">
-                <div class="modal-content">
+                <div class="modal-content qr-transfer-container">
                     <h3>📱 QR Code Transfer Data</h3>
-                    <p>Scan QR Code ini dengan HP Admin untuk mentransfer data</p>
+                    <p>Scan QR Code ini dengan Admin untuk mentransfer data</p>
                     <p><strong>${currentUser.name}</strong> - ${currentUser.divisi}</p>
+                    <p><small>📝 ${data.totalLaporan} laporan akan ditransfer</small></p>
                     <div id="transferQRCode" style="padding:20px; display:flex; justify-content:center;"></div>
                     <p><small>Data akan langsung terimport ke sistem Admin</small></p>
                     <button onclick="closeTransferModal()" style="margin-top:10px; padding:8px 20px; background:#e74c3c; color:white; border:none; border-radius:8px;">Tutup</button>
@@ -1047,12 +1062,12 @@
         
         document.body.insertAdjacentHTML('beforeend', modalHtml);
         
-        // Generate QR Code menggunakan API quickchart.io (sama seperti QR sync)
+        // Generate QR Code menggunakan API quickchart.io
         const qrContainer = document.getElementById("transferQRCode");
         const img = document.createElement('img');
-        img.src = `https://quickchart.io/qr?text=${encodeURIComponent(qrText)}&size=200&margin=2`;
-        img.style.width = '200px';
-        img.style.height = '200px';
+        img.src = `https://quickchart.io/qr?text=${encodeURIComponent(qrText)}&size=250&margin=2`;
+        img.style.width = '250px';
+        img.style.height = '250px';
         img.style.display = 'block';
         img.style.margin = '0 auto';
         qrContainer.appendChild(img);
@@ -1063,7 +1078,109 @@
         if (modal) modal.remove();
     }
     
-    // Import data (untuk admin)
+    // SCAN QR TRANSFER (Admin) - DIPERBAIKI
+    async function startTransferScanner() {
+        const modalHtml = `
+            <div id="transferScanModal" class="modal">
+                <div class="modal-content" style="max-width:400px;">
+                    <h3>📷 Scan QR Transfer dari Operator</h3>
+                    <p>Arahkan kamera ke QR Code yang ditampilkan operator</p>
+                    <div id="transferPreview" style="width:100%; max-width:300px; margin:0 auto;"></div>
+                    <div id="transferScanResult" style="margin-top:10px; font-size:12px; padding:10px;"></div>
+                    <button onclick="closeTransferScanModal()" style="margin-top:15px; padding:8px 20px; background:#e74c3c; color:white; border:none; border-radius:8px;">Tutup</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+        transferScanner = new Html5Qrcode("transferPreview");
+        try {
+            await transferScanner.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                (decodedText) => {
+                    console.log("Scan result:", decodedText);
+                    
+                    if (decodedText.startsWith('TRANSFER_DATA:')) {
+                        const encodedData = decodedText.replace('TRANSFER_DATA:', '');
+                        try {
+                            const jsonData = decodeURIComponent(atob(encodedData));
+                            const transferData = JSON.parse(jsonData);
+                            
+                            if (transferData.type === 'TRANSFER_DATA' && transferData.reports) {
+                                // Proses import data
+                                let newCount = 0;
+                                let duplicateCount = 0;
+                                
+                                transferData.reports.forEach(newReport => {
+                                    const exists = reports.some(r => r.id === newReport.id);
+                                    if (!exists) {
+                                        reports.push(newReport);
+                                        newCount++;
+                                    } else {
+                                        duplicateCount++;
+                                    }
+                                });
+                                
+                                saveToLocal();
+                                
+                                document.getElementById('transferScanResult').innerHTML = `
+                                    <div style="background:#d4edda; color:#155724; padding:10px; border-radius:8px;">
+                                        ✅ BERHASIL!<br>
+                                        📥 ${newCount} laporan baru diimport<br>
+                                        🔄 ${duplicateCount} duplikat dilewati<br>
+                                        👤 Operator: ${transferData.operatorName}<br>
+                                        📋 Divisi: ${transferData.operatorDivisi}
+                                    </div>
+                                `;
+                                
+                                setTimeout(() => {
+                                    transferScanner.stop();
+                                    closeTransferScanModal();
+                                    renderAdminPanel();
+                                }, 2000);
+                            } else {
+                                throw new Error("Format data tidak valid");
+                            }
+                        } catch (e) {
+                            document.getElementById('transferScanResult').innerHTML = `
+                                <div style="background:#f8d7da; color:#721c24; padding:10px; border-radius:8px;">
+                                    ❌ Gagal membaca data: ${e.message}
+                                </div>
+                            `;
+                        }
+                    } else {
+                        document.getElementById('transferScanResult').innerHTML = `
+                            <div style="background:#fff3cd; color:#856404; padding:10px; border-radius:8px;">
+                                ⚠️ Bukan QR Transfer yang valid
+                            </div>
+                        `;
+                    }
+                },
+                (errorMessage) => {
+                    console.log("Scan error:", errorMessage);
+                }
+            );
+        } catch (err) {
+            document.getElementById('transferScanResult').innerHTML = `
+                <div style="background:#f8d7da; color:#721c24; padding:10px; border-radius:8px;">
+                    ❌ Gagal mengakses kamera: ${err}
+                </div>
+            `;
+        }
+    }
+    
+    function closeTransferScanModal() {
+        if (transferScanner) {
+            transferScanner.stop().catch(() => {});
+            transferScanner = null;
+        }
+        const modal = document.getElementById('transferScanModal');
+        if (modal) modal.remove();
+    }
+    
+    // Import data manual (Admin)
     function showImportModal() {
         const modalHtml = `
             <div id="importModal" class="modal">
@@ -1119,7 +1236,12 @@
         try {
             const decodedData = decodeURIComponent(atob(pasteData));
             const importedData = JSON.parse(decodedData);
-            processImportData(importedData);
+            
+            if (importedData.type === 'TRANSFER_DATA' && importedData.reports) {
+                processImportData(importedData);
+            } else {
+                alert('❌ Format data tidak valid!');
+            }
         } catch (err) {
             alert('❌ Gagal membaca data! Pastikan kode yang di-paste benar.');
         }
@@ -1132,7 +1254,11 @@
         reader.onload = function(e) {
             try {
                 const importedData = JSON.parse(e.target.result);
-                processImportData(importedData);
+                if (importedData.type === 'TRANSFER_DATA' && importedData.reports) {
+                    processImportData(importedData);
+                } else {
+                    alert('❌ Format file tidak valid!');
+                }
             } catch (err) {
                 alert('❌ Gagal membaca file! Format tidak valid.');
             }
@@ -1141,11 +1267,6 @@
     }
     
     function processImportData(importedData) {
-        if (!importedData.reports || !Array.isArray(importedData.reports)) {
-            alert('❌ Format data tidak valid!');
-            return;
-        }
-        
         let newCount = 0;
         let duplicateCount = 0;
         
@@ -1167,52 +1288,6 @@
         if (currentUser.role === 'admin') {
             renderAdminPanel();
         }
-    }
-    
-    // Scan QR Transfer (Admin)
-    async function startTransferScanner() {
-        const modalHtml = `
-            <div id="transferScanModal" class="modal">
-                <div class="modal-content" style="max-width:400px;">
-                    <h3>📷 Scan QR Transfer dari Operator</h3>
-                    <div id="transferPreview" style="width:100%; max-width:300px; margin:0 auto;"></div>
-                    <div id="transferScanResult" style="margin-top:10px; font-size:12px;"></div>
-                    <button onclick="closeTransferScanModal()" style="margin-top:15px; padding:8px 20px; background:#e74c3c; color:white; border:none; border-radius:8px;">Tutup</button>
-                </div>
-            </div>
-        `;
-        
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        
-        transferScanner = new Html5Qrcode("transferPreview");
-        try {
-            await transferScanner.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 250, height: 250 } },
-                (decodedText) => {
-                    if (decodedText.startsWith('TRANSFER_DATA:')) {
-                        const encodedData = decodedText.replace('TRANSFER_DATA:', '');
-                        const jsonData = decodeURIComponent(atob(encodedData));
-                        const transferData = JSON.parse(jsonData);
-                        processImportData(transferData);
-                        transferScanner.stop();
-                        closeTransferScanModal();
-                    }
-                },
-                () => {}
-            );
-        } catch (err) {
-            document.getElementById('transferScanResult').innerHTML = `<div style="color:red;">❌ Gagal mengakses kamera: ${err}</div>`;
-        }
-    }
-    
-    function closeTransferScanModal() {
-        if (transferScanner) {
-            transferScanner.stop().catch(() => {});
-            transferScanner = null;
-        }
-        const modal = document.getElementById('transferScanModal');
-        if (modal) modal.remove();
     }
     
     // ==================== EXPORT XLSX ====================
@@ -1395,11 +1470,6 @@
                 }
                 if (!report && data.operatorName && data.tanggal && data.aktivitas) {
                     report = reports.find(r => r.operatorName === data.operatorName && r.tanggal === data.tanggal && r.aktivitas === data.aktivitas);
-                }
-                if (!report && data.operatorName && data.tanggal) {
-                    const candidates = reports.filter(r => r.operatorName === data.operatorName && r.tanggal === data.tanggal && !r.synced);
-                    if (candidates.length === 1) report = candidates[0];
-                    else if (candidates.length > 1) report = candidates.find(r => parseFloat(r.totalJam) >= 8.0);
                 }
                 
                 if (report) {
