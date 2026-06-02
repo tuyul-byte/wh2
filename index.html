@@ -3,734 +3,689 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Daily Report System - QR Code Sync</title>
+    <title>Daily Report System - QR Transfer</title>
     <style>
-/* Mengubah ukuran judul Riwayat Sync */
-.qr-container .qr-title {
-    font-size: 16px;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        /* Splash Screen */
-        .splash-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: opacity 0.5s ease;
-        }
-
-        .splash-content {
-            text-align: center;
-            color: white;
-        }
-
-        .splash-logo {
-            font-size: 64px;
-            margin-bottom: 20px;
-            animation: bounce 1s ease infinite;
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
-        }
-
-        .progress-bar {
-            width: 250px;
-            height: 4px;
-            background: rgba(255,255,255,0.3);
-            border-radius: 10px;
-            margin: 30px auto 0;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            width: 0%;
-            height: 100%;
-            background: white;
-            border-radius: 10px;
-            transition: width 0.3s ease;
-        }
-
-        /* Login Panel */
-        .login-container {
-            display: none;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .login-card {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            width: 100%;
-            max-width: 450px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            animation: slideUp 0.5s ease;
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .login-header {
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        .login-header h2 {
-            font-size: 28px;
-            color: #1e3c72;
-            margin-bottom: 8px;
-        }
-
-        .login-header p {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 5px;
-        }
-
-        .login-header.with-spacing {
-            margin-bottom: 30px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-
-        .divider {
-            height: 1px;
-            background: linear-gradient(90deg, transparent, #ccc, transparent);
-            margin: 25px 0 20px 0;
-        }
-
-        .role-selector {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .role-btn {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            background: white;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 600;
-        }
-
-        .role-btn.active {
-            border-color: #2a5298;
-            background: #2a5298;
-            color: white;
-        }
-
-        .input-group {
-            margin-bottom: 25px;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #333;
-        }
-
-        .input-group input, .input-group select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 14px;
-            transition: 0.3s;
-        }
-
-        .input-group input:focus, .input-group select:focus {
-            outline: none;
-            border-color: #2a5298;
-        }
-
-        .login-btn {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: transform 0.2s;
-        }
-
-        .login-btn:hover {
-            transform: translateY(-2px);
-        }
-
-        .error-msg {
-            color: #e74c3c;
-            font-size: 12px;
-            margin-top: 15px;
-            text-align: center;
-        }
-
-        .info-login {
-            margin-top: 25px;
-            font-size: 12px;
-            text-align: center;
-            color: #999;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
-        }
-
-        .info-login p {
-            margin: 5px 0;
-        }
-
-        /* Main App */
-        .app-container {
-            display: none;
-        }
-
-        .navbar {
-            background: #1e3c72;
-            color: white;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .user-badge {
-            background: #3498db;
-            padding: 6px 15px;
-            border-radius: 20px;
-            font-size: 14px;
-        }
-
-        .logout-btn {
-            background: #e74c3c;
-            border: none;
-            padding: 6px 15px;
-            border-radius: 20px;
-            color: white;
-            cursor: pointer;
-        }
-
-        .main-content {
-            padding: 20px;
-            background: #f0f2f5;
-            min-height: calc(100vh - 70px);
-        }
-
-        /* QR Code Styles */
-        .qr-container {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .qr-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #1e3c72;
-        }
-
-        .qr-status {
-            padding: 10px;
-            border-radius: 8px;
-            margin: 15px 0;
-            font-weight: bold;
-        }
-
-        .qr-status.success {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .qr-status.warning {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .qr-status.error {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .qr-code {
-            padding: 20px;
-            background: white;
-            display: inline-block;
-            border-radius: 10px;
-        }
-        
-        .qr-code img {
-            display: block;
-            margin: 0 auto;
-        }
-
-        .sync-btn {
-            background: #27ae60;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-
-        .sync-btn:disabled {
-            background: #95a5a6;
-            cursor: not-allowed;
-        }
-
-        /* Scanner Styles */
-        .scanner-container {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .scanner-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .camera-btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .camera-btn.start {
-            background: #27ae60;
-            color: white;
-        }
-
-        .camera-btn.start:hover {
-            background: #219a52;
-        }
-
-        .camera-btn.stop {
-            background: #e74c3c;
-            color: white;
-        }
-
-        .camera-btn.stop:hover {
-            background: #c0392b;
-        }
-
-        .camera-btn:disabled {
-            background: #95a5a6;
-            cursor: not-allowed;
-        }
-
-        .video-container {
-            position: relative;
-            width: 100%;
-            max-width: 500px;
-            margin: 0 auto;
-            border-radius: 10px;
-            overflow: hidden;
-            background: #000;
-        }
-
-        #preview {
-            width: 100%;
-            height: auto;
-            background: #000;
-        }
-
-        .scan-result {
-            margin-top: 15px;
-            padding: 12px;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        .scan-result.success {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .scan-result.error {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .scan-result.info {
-            background: #cce5ff;
-            color: #004085;
-        }
-
-        .scan-result.warning {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        /* Spreadsheet Styles */
-        .spreadsheet-card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .spreadsheet-toolbar {
-            padding: 12px 20px;
-            background: #f8f9fa;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .toolbar-btn {
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .toolbar-btn.excel {
-            background: #27ae60;
-        }
-
-        .toolbar-btn.excel:hover {
-            background: #219a52;
-        }
-
-        .toolbar-btn.reset {
-            background: #e74c3c;
-        }
-
-        .toolbar-btn.reset:hover {
-            background: #c0392b;
-        }
-
-        .toolbar-btn.sync-reset {
-            background: #e67e22;
-        }
-
-        .toolbar-btn.sync-reset:hover {
-            background: #d35400;
-        }
-
-        .toolbar-btn.history-reset {
-            background: #3498db;
-        }
-
-        .toolbar-btn.history-reset:hover {
-            background: #2980b9;
-        }
-
-        .toolbar-btn.whatsapp {
-            background: #25D366;
-        }
-
-        .toolbar-btn.whatsapp:hover {
-            background: #128C7E;
-        }
-
-        .toolbar-btn.email {
-            background: #D44638;
-        }
-
-        .toolbar-btn.email:hover {
-            background: #B23121;
-        }
-
-        .toolbar-btn.copy {
-            background: #3498db;
-        }
-
-        .toolbar-btn.qr-transfer {
-            background: #9b59b6;
-        }
-
-        .toolbar-btn.qr-transfer:hover {
-            background: #8e44ad;
-        }
-
-        .spreadsheet-wrapper {
-            overflow-x: auto;
-        }
-
-        .spreadsheet-table {
-            border-collapse: collapse;
-            min-width: 100%;
-            font-size: 13px;
-        }
-
-        .spreadsheet-table th, .spreadsheet-table td {
-            border: 1px solid #ddd;
-            padding: 12px 8px;
-            min-width: 100px;
-            vertical-align: middle;
-        }
-
-        .spreadsheet-table th {
-            background: #f8f9fa;
-            font-weight: 600;
-            text-align: center;
-            padding: 14px 8px;
-        }
-
-        .spreadsheet-table td {
-            padding: 10px 8px;
-        }
-
-        .number-cell {
-            text-align: right;
-            font-family: monospace;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: bold;
-        }
-
-        .status-done { background: #d4edda; color: #155724; }
-        .status-progress { background: #fff3cd; color: #856404; }
-        .status-pending { background: #f8d7da; color: #721c24; }
-
-        .tabs-container {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            margin-top: 20px;
-        }
-
-        .tabs-header {
-            display: flex;
-            background: #34495e;
-            overflow-x: auto;
-            gap: 2px;
-        }
-
-        .tab-btn {
-            padding: 12px 24px;
-            background: #2c3e50;
-            border: none;
-            color: white;
-            cursor: pointer;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-        .tab-btn.active {
-            background: #3498db;
-        }
-
-        .tab-content {
-            display: none;
-            padding: 20px;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .export-buttons {
-            display: flex;
-            gap: 10px;
-            margin-left: auto;
-        }
-
-        .search-container {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-left: auto;
-        }
-
-        .search-input {
-            padding: 6px 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 12px;
-            width: 150px;
-        }
-
-        /* Tambahan untuk 7 kolom - perkecil lebar per kolom */
-        .spreadsheet-table th,
-        .spreadsheet-table td {
-            min-width: 70px;
-            padding: 4px 6px;
-        }
-
-        /* Kolom 1: No/Checkbox */
-        .spreadsheet-table th:nth-child(1),
-        .spreadsheet-table td:nth-child(1) {
-            min-width: 70px;
-            text-align: center;
-        }
-
-        /* Kolom 2: Kode/ID */
-        .spreadsheet-table th:nth-child(2),
-        .spreadsheet-table td:nth-child(2) {
-            min-width: 120px;
-        }
-
-        /* Kolom 3: Nama Produk (lebar sedang) */
-        .spreadsheet-table th:nth-child(3),
-        .spreadsheet-table td:nth-child(3) {
-            min-width: 40px;
-        }
-
-        /* Kolom 4: Kategori */
-        .spreadsheet-table th:nth-child(4),
-        .spreadsheet-table td:nth-child(4) {
-            min-width: 40px;
-        }
-
-        /* Kolom 5: Harga */
-        .spreadsheet-table th:nth-child(5),
-        .spreadsheet-table td:nth-child(5) {
-            min-width: 75px;
-        }
-
-        /* Kolom 6: Stok */
-        .spreadsheet-table th:nth-child(6),
-        .spreadsheet-table td:nth-child(6) {
-            min-width: 70px;
-            text-align: center;
-        }
-
-        /* Kolom 7: Status */
-        .spreadsheet-table th:nth-child(7),
-        .spreadsheet-table td:nth-child(7) {
-            min-width: 100px;
-            text-align: center;
-        }
-        
-        .reset-info {
-            font-size: 12px;
-            color: #666;
-            margin-top: 10px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            text-align: left;
-        }
-        
-        .reset-info strong {
-            color: #2c3e50;
-        }
-        
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 10px;
-        }
-
-        .badge-date {
-            display: inline-block;
-            background: #1e3c72;
-            color: white;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 10px;
-            margin-left: 5px;
-        }
-
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 10000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 20px;
-            border-radius: 20px;
-            text-align: center;
-            max-width: 90%;
-            max-height: 90%;
-            overflow: auto;
-        }
-
-        .import-area {
-            border: 2px dashed #3498db;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 10px 0;
-            cursor: pointer;
-            text-align: center;
-        }
-
-        .import-area:hover {
-            background: #f0f8ff;
-        }
-        
-        .qr-transfer-container {
-            background: white;
-            padding: 20px;
-            border-radius: 16px;
-            text-align: center;
-        }
-        
-        .qr-transfer-container img {
-            display: block;
-            margin: 0 auto;
-        }
+
+/* Splash Screen */
+.splash-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease;
+}
+
+.splash-content {
+    text-align: center;
+    color: white;
+}
+
+.splash-logo {
+    font-size: 64px;
+    margin-bottom: 20px;
+    animation: bounce 1s ease infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+.progress-bar {
+    width: 250px;
+    height: 4px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 10px;
+    margin: 30px auto 0;
+    overflow: hidden;
+}
+
+.progress-fill {
+    width: 0%;
+    height: 100%;
+    background: white;
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+/* Login Panel */
+.login-container {
+    display: none;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.login-card {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    width: 100%;
+    max-width: 450px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: slideUp 0.5s ease;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.login-header h2 {
+    font-size: 28px;
+    color: #1e3c72;
+    margin-bottom: 8px;
+}
+
+.login-header p {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.login-header.with-spacing {
+    margin-bottom: 30px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #ccc, transparent);
+    margin: 25px 0 20px 0;
+}
+
+.role-selector {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.role-btn {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    background: white;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 600;
+}
+
+.role-btn.active {
+    border-color: #2a5298;
+    background: #2a5298;
+    color: white;
+}
+
+.input-group {
+    margin-bottom: 25px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+}
+
+.input-group input, .input-group select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.input-group input:focus, .input-group select:focus {
+    outline: none;
+    border-color: #2a5298;
+}
+
+.login-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: transform 0.2s;
+}
+
+.login-btn:hover {
+    transform: translateY(-2px);
+}
+
+.error-msg {
+    color: #e74c3c;
+    font-size: 12px;
+    margin-top: 15px;
+    text-align: center;
+}
+
+.info-login {
+    margin-top: 25px;
+    font-size: 12px;
+    text-align: center;
+    color: #999;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+.info-login p {
+    margin: 5px 0;
+}
+
+/* Main App */
+.app-container {
+    display: none;
+}
+
+.navbar {
+    background: #1e3c72;
+    color: white;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.user-badge {
+    background: #3498db;
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+}
+
+.logout-btn {
+    background: #e74c3c;
+    border: none;
+    padding: 6px 15px;
+    border-radius: 20px;
+    color: white;
+    cursor: pointer;
+}
+
+.main-content {
+    padding: 20px;
+    background: #f0f2f5;
+    min-height: calc(100vh - 70px);
+}
+
+/* QR Code Styles */
+.qr-container {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.qr-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #1e3c72;
+}
+
+.qr-status {
+    padding: 10px;
+    border-radius: 8px;
+    margin: 15px 0;
+    font-weight: bold;
+}
+
+.qr-status.success {
+    background: #d4edda;
+    color: #155724;
+}
+
+.qr-status.warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.qr-status.error {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.qr-code {
+    padding: 20px;
+    background: white;
+    display: inline-block;
+    border-radius: 10px;
+}
+
+.qr-code img {
+    display: block;
+    margin: 0 auto;
+}
+
+/* Transfer Scanner Styles */
+.scanner-container {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.scanner-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.camera-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.camera-btn.start {
+    background: #27ae60;
+    color: white;
+}
+
+.camera-btn.start:hover {
+    background: #219a52;
+}
+
+.camera-btn.stop {
+    background: #e74c3c;
+    color: white;
+}
+
+.camera-btn.stop:hover {
+    background: #c0392b;
+}
+
+.camera-btn:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+}
+
+.video-container {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #000;
+}
+
+#transferPreview {
+    width: 100%;
+    height: auto;
+    background: #000;
+}
+
+.scan-result {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.scan-result.success {
+    background: #d4edda;
+    color: #155724;
+}
+
+.scan-result.error {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.scan-result.info {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.scan-result.warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+/* Spreadsheet Styles */
+.spreadsheet-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.spreadsheet-toolbar {
+    padding: 12px 20px;
+    background: #f8f9fa;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+}
+
+.toolbar-btn {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.toolbar-btn.excel {
+    background: #27ae60;
+}
+
+.toolbar-btn.excel:hover {
+    background: #219a52;
+}
+
+.toolbar-btn.reset {
+    background: #e74c3c;
+}
+
+.toolbar-btn.reset:hover {
+    background: #c0392b;
+}
+
+.toolbar-btn.sync-reset {
+    background: #e67e22;
+}
+
+.toolbar-btn.sync-reset:hover {
+    background: #d35400;
+}
+
+.toolbar-btn.history-reset {
+    background: #3498db;
+}
+
+.toolbar-btn.history-reset:hover {
+    background: #2980b9;
+}
+
+.toolbar-btn.whatsapp {
+    background: #25D366;
+}
+
+.toolbar-btn.whatsapp:hover {
+    background: #128C7E;
+}
+
+.toolbar-btn.email {
+    background: #D44638;
+}
+
+.toolbar-btn.email:hover {
+    background: #B23121;
+}
+
+.toolbar-btn.copy {
+    background: #3498db;
+}
+
+.toolbar-btn.qr-transfer {
+    background: #9b59b6;
+}
+
+.toolbar-btn.qr-transfer:hover {
+    background: #8e44ad;
+}
+
+.spreadsheet-wrapper {
+    overflow-x: auto;
+}
+
+.spreadsheet-table {
+    border-collapse: collapse;
+    min-width: 100%;
+    font-size: 13px;
+}
+
+.spreadsheet-table th, .spreadsheet-table td {
+    border: 1px solid #ddd;
+    padding: 12px 8px;
+    min-width: 100px;
+    vertical-align: middle;
+}
+
+.spreadsheet-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    text-align: center;
+    padding: 14px 8px;
+}
+
+.spreadsheet-table td {
+    padding: 10px 8px;
+}
+
+.number-cell {
+    text-align: right;
+    font-family: monospace;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.status-done { background: #d4edda; color: #155724; }
+.status-progress { background: #fff3cd; color: #856404; }
+.status-pending { background: #f8d7da; color: #721c24; }
+
+.tabs-container {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 20px;
+}
+
+.tabs-header {
+    display: flex;
+    background: #34495e;
+    overflow-x: auto;
+    gap: 2px;
+}
+
+.tab-btn {
+    padding: 12px 24px;
+    background: #2c3e50;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.tab-btn.active {
+    background: #3498db;
+}
+
+.tab-content {
+    display: none;
+    padding: 20px;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.search-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-left: auto;
+}
+
+.search-input {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 12px;
+    width: 150px;
+}
+
+.spreadsheet-table th,
+.spreadsheet-table td {
+    min-width: 70px;
+    padding: 4px 6px;
+}
+
+.spreadsheet-table th:nth-child(1),
+.spreadsheet-table td:nth-child(1) {
+    min-width: 70px;
+    text-align: center;
+}
+
+.spreadsheet-table th:nth-child(2),
+.spreadsheet-table td:nth-child(2) {
+    min-width: 120px;
+}
+
+.spreadsheet-table th:nth-child(3),
+.spreadsheet-table td:nth-child(3) {
+    min-width: 40px;
+}
+
+.spreadsheet-table th:nth-child(4),
+.spreadsheet-table td:nth-child(4) {
+    min-width: 40px;
+}
+
+.spreadsheet-table th:nth-child(5),
+.spreadsheet-table td:nth-child(5) {
+    min-width: 75px;
+}
+
+.spreadsheet-table th:nth-child(6),
+.spreadsheet-table td:nth-child(6) {
+    min-width: 70px;
+    text-align: center;
+}
+
+.spreadsheet-table th:nth-child(7),
+.spreadsheet-table td:nth-child(7) {
+    min-width: 100px;
+    text-align: center;
+}
+
+.reset-info {
+    font-size: 12px;
+    color: #666;
+    margin-top: 10px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    text-align: left;
+}
+
+.reset-info strong {
+    color: #2c3e50;
+}
+
+.btn-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 20px;
+    text-align: center;
+    max-width: 90%;
+    max-height: 90%;
+    overflow: auto;
+}
+
+.import-area {
+    border: 2px dashed #3498db;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 10px 0;
+    cursor: pointer;
+    text-align: center;
+}
+
+.import-area:hover {
+    background: #f0f8ff;
+}
+
+.qr-transfer-container {
+    background: white;
+    padding: 20px;
+    border-radius: 16px;
+    text-align: center;
+}
+
+.qr-transfer-container img {
+    display: block;
+    margin: 0 auto;
+}
     </style>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
@@ -815,85 +770,41 @@
     ];
     
     let reports = [];
-    let syncQueue = [];
     let currentUser = null;
-    let html5QrCode = null;
-    let isScanning = false;
-    let scanActive = false;
-    let autoStopTimeout = null;
-    let currentDateFilter = '';
     let transferScanner = null;
+    let isScanning = false;
+    let currentDateFilter = '';
     
     // Load data
     function loadFromLocal() {
-        const saved = localStorage.getItem('daily_report_qr_system');
+        const saved = localStorage.getItem('daily_report_system');
         if (saved) {
             const data = JSON.parse(saved);
             reports = data.reports || [];
-            syncQueue = data.syncQueue || [];
         } else {
             reports = [];
-            syncQueue = [];
         }
+    }
+    
+    function saveToLocal() {
+        localStorage.setItem('daily_report_system', JSON.stringify({ reports }));
     }
     
     // Reset semua data
     function resetAllData() {
         if (currentUser && currentUser.role === 'admin') {
-            if (confirm('⚠️ PERINGATAN: Ini akan menghapus SEMUA data laporan dan riwayat sync!\n\nSetelah reset, semua laporan akan hilang.\n\nAnda yakin ingin melanjutkan?')) {
-                localStorage.removeItem('daily_report_qr_system');
+            if (confirm('⚠️ PERINGATAN: Ini akan menghapus SEMUA data laporan!\n\nAnda yakin ingin melanjutkan?')) {
+                localStorage.removeItem('daily_report_system');
                 reports = [];
-                syncQueue = [];
                 saveToLocal();
-                
                 if (currentUser.role === 'admin') {
                     renderAdminPanel();
                 }
-                
                 alert('✅ Semua data berhasil direset!');
             }
         } else {
             alert('Reset data hanya dapat dilakukan oleh Admin!');
         }
-    }
-    
-    // Reset status sync saja
-    function resetSyncStatusOnly() {
-        if (currentUser && currentUser.role === 'admin') {
-            if (confirm('⚠️ PERINGATAN: Ini akan mereset status sync SEMUA laporan!\n\nLaporan yang sudah pernah di-sync akan bisa di-scan ULANG.\n\nData laporan TIDAK akan terhapus.\n\nLanjutkan?')) {
-                let resetCount = 0;
-                reports.forEach(report => {
-                    if (report.synced === true) {
-                        report.synced = false;
-                        report.syncDate = null;
-                        resetCount++;
-                    }
-                });
-                
-                saveToLocal();
-                
-                alert(`✅ Status sync ${resetCount} laporan telah direset!\n\nSekarang laporan tersebut bisa di-scan ulang.`);
-                renderAdminPanel();
-            }
-        }
-    }
-    
-    // Reset riwayat sync saja
-    function resetSyncHistoryOnly() {
-        if (currentUser && currentUser.role === 'admin') {
-            if (confirm('⚠️ PERINGATAN: Ini akan menghapus SEMUA riwayat scan QR (Sync Queue)!\n\nStatus sync pada laporan TIDAK akan berubah.\n\nLanjutkan?')) {
-                const historyCount = syncQueue.length;
-                syncQueue = [];
-                saveToLocal();
-                
-                alert(`✅ ${historyCount} riwayat sync berhasil dihapus!\n\nStatus sync laporan tidak berubah.`);
-                renderAdminPanel();
-            }
-        }
-    }
-    
-    function saveToLocal() {
-        localStorage.setItem('daily_report_qr_system', JSON.stringify({ reports, syncQueue }));
     }
     
     function calculateTotalJam(mulai, selesai) {
@@ -919,30 +830,6 @@
         return `${operatorCode}_${tanggal.replace(/\//g, '-')}_${divisiCode}_${id}`;
     }
     
-    function isEligibleForQR(report) {
-        const totalJam = parseFloat(report.totalJam);
-        return totalJam >= 8.0 && !report.synced;
-    }
-    
-    function generateQRData(report) {
-        const uniqueCode = getDailyUniqueCode(report.operatorName, report.tanggal, report.divisi, report.id);
-        
-        return JSON.stringify({
-            type: 'DAILY_REPORT_SYNC',
-            version: '1.0',
-            uniqueCode: uniqueCode,
-            id: report.id,
-            operator: report.operator,
-            operatorName: report.operatorName,
-            divisi: report.divisi,
-            tanggal: report.tanggal,
-            aktivitas: report.aktivitas,
-            totalJam: report.totalJam,
-            status: report.status,
-            timestamp: new Date().toISOString()
-        });
-    }
-    
     function generateQRCode(element, text, size = 200) {
         if (!element) return;
         element.innerHTML = '';
@@ -958,7 +845,6 @@
     
     // ==================== FITUR TRANSFER DATA ANTAR PERANGKAT ====================
     
-    // Export data untuk dikirim (dengan kompresi)
     function getExportData() {
         const userReports = reports.filter(r => r.operator === currentUser.username);
         return {
@@ -972,16 +858,13 @@
         };
     }
     
-    // Kirim via WhatsApp (dengan data kompres)
     function sendViaWhatsApp() {
         const data = getExportData();
         const dataStr = JSON.stringify(data);
-        // Kompres data agar tidak terlalu panjang untuk QR
         const compressedData = btoa(encodeURIComponent(dataStr));
         
         const message = `📊 *TRANSFER DATA LAPORAN - ${currentUser.name}*\n` +
                        `📅 Tanggal: ${new Date().toLocaleDateString('id')}\n` +
-                       `🕐 Waktu: ${new Date().toLocaleTimeString('id')}\n` +
                        `📋 Divisi: ${currentUser.divisi}\n` +
                        `📝 Total Laporan: ${data.totalLaporan}\n\n` +
                        `*CARA IMPORT:*\n` +
@@ -991,34 +874,24 @@
                        `4. Tempel kode di bawah ini\n\n` +
                        `*KODE DATA:*\n${compressedData}`;
         
-        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-        window.open(whatsappUrl, '_blank');
+        window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
     }
     
-    // Kirim via Email
     function sendViaEmail() {
         const data = getExportData();
         const dataStr = JSON.stringify(data);
         const compressedData = btoa(encodeURIComponent(dataStr));
         
-        let emailBody = `TRANSFER DATA LAPORAN HARIAN\n`;
-        emailBody += `========================\n\n`;
+        let emailBody = `TRANSFER DATA LAPORAN HARIAN\n\n`;
         emailBody += `Operator: ${currentUser.name}\n`;
         emailBody += `Divisi: ${currentUser.divisi}\n`;
         emailBody += `Tanggal Export: ${new Date().toLocaleString('id')}\n`;
         emailBody += `Total Laporan: ${data.totalLaporan}\n\n`;
-        emailBody += `CARA IMPORT:\n`;
-        emailBody += `1. Login sebagai Admin\n`;
-        emailBody += `2. Klik "📥 Import Data"\n`;
-        emailBody += `3. Pilih "Paste dari Clipboard"\n`;
-        emailBody += `4. Tempel kode di bawah ini\n\n`;
         emailBody += `KODE DATA:\n${compressedData}`;
         
-        const mailtoUrl = `mailto:?subject=Transfer%20Data%20Laporan%20${currentUser.name}&body=${encodeURIComponent(emailBody)}`;
-        window.open(mailtoUrl, '_blank');
+        window.open(`mailto:?subject=Transfer%20Data%20Laporan%20${currentUser.name}&body=${encodeURIComponent(emailBody)}`, '_blank');
     }
     
-    // Salin data ke clipboard
     async function copyToClipboard() {
         const data = getExportData();
         const dataStr = JSON.stringify(data);
@@ -1026,7 +899,7 @@
         
         try {
             await navigator.clipboard.writeText(compressedData);
-            alert('✅ Data berhasil disalin ke clipboard!\n\nPastekan ke Admin untuk di-import.');
+            alert('✅ Data berhasil disalin ke clipboard!');
         } catch (err) {
             const textarea = document.createElement('textarea');
             textarea.value = compressedData;
@@ -1034,15 +907,13 @@
             textarea.select();
             document.execCommand('copy');
             document.body.removeChild(textarea);
-            alert('✅ Data berhasil disalin ke clipboard!\n\nPastekan ke Admin untuk di-import.');
+            alert('✅ Data berhasil disalin ke clipboard!');
         }
     }
     
-    // Generate QR Transfer - QR berisi data laporan lengkap
     function generateTransferQR() {
         const data = getExportData();
         const dataStr = JSON.stringify(data);
-        // Kompres data untuk QR
         const compressedData = btoa(encodeURIComponent(dataStr));
         const qrText = `TRANSFER_DATA:${compressedData}`;
         
@@ -1053,8 +924,7 @@
                     <p>Scan QR Code ini dengan Admin untuk mentransfer data</p>
                     <p><strong>${currentUser.name}</strong> - ${currentUser.divisi}</p>
                     <p><small>📝 ${data.totalLaporan} laporan akan ditransfer</small></p>
-                    <div id="transferQRCode" style="padding:20px; display:flex; justify-content:center;"></div>
-                    <p><small>Data akan langsung terimport ke sistem Admin</small></p>
+                    <div id="transferQRCode" style="padding:20px;"></div>
                     <button onclick="closeTransferModal()" style="margin-top:10px; padding:8px 20px; background:#e74c3c; color:white; border:none; border-radius:8px;">Tutup</button>
                 </div>
             </div>
@@ -1062,15 +932,13 @@
         
         document.body.insertAdjacentHTML('beforeend', modalHtml);
         
-        // Generate QR Code menggunakan API quickchart.io
-        const qrContainer = document.getElementById("transferQRCode");
         const img = document.createElement('img');
         img.src = `https://quickchart.io/qr?text=${encodeURIComponent(qrText)}&size=250&margin=2`;
         img.style.width = '250px';
         img.style.height = '250px';
         img.style.display = 'block';
         img.style.margin = '0 auto';
-        qrContainer.appendChild(img);
+        document.getElementById("transferQRCode").appendChild(img);
     }
     
     function closeTransferModal() {
@@ -1078,7 +946,7 @@
         if (modal) modal.remove();
     }
     
-    // SCAN QR TRANSFER (Admin) - DIPERBAIKI
+    // SCAN QR TRANSFER (Admin)
     async function startTransferScanner() {
         const modalHtml = `
             <div id="transferScanModal" class="modal">
@@ -1100,8 +968,6 @@
                 { facingMode: "environment" },
                 { fps: 10, qrbox: { width: 250, height: 250 } },
                 (decodedText) => {
-                    console.log("Scan result:", decodedText);
-                    
                     if (decodedText.startsWith('TRANSFER_DATA:')) {
                         const encodedData = decodedText.replace('TRANSFER_DATA:', '');
                         try {
@@ -1109,29 +975,19 @@
                             const transferData = JSON.parse(jsonData);
                             
                             if (transferData.type === 'TRANSFER_DATA' && transferData.reports) {
-                                // Proses import data
                                 let newCount = 0;
-                                let duplicateCount = 0;
-                                
                                 transferData.reports.forEach(newReport => {
                                     const exists = reports.some(r => r.id === newReport.id);
                                     if (!exists) {
                                         reports.push(newReport);
                                         newCount++;
-                                    } else {
-                                        duplicateCount++;
                                     }
                                 });
-                                
                                 saveToLocal();
                                 
                                 document.getElementById('transferScanResult').innerHTML = `
                                     <div style="background:#d4edda; color:#155724; padding:10px; border-radius:8px;">
-                                        ✅ BERHASIL!<br>
-                                        📥 ${newCount} laporan baru diimport<br>
-                                        🔄 ${duplicateCount} duplikat dilewati<br>
-                                        👤 Operator: ${transferData.operatorName}<br>
-                                        📋 Divisi: ${transferData.operatorDivisi}
+                                        ✅ BERHASIL! ${newCount} laporan diimport dari ${transferData.operatorName}
                                     </div>
                                 `;
                                 
@@ -1158,9 +1014,7 @@
                         `;
                     }
                 },
-                (errorMessage) => {
-                    console.log("Scan error:", errorMessage);
-                }
+                () => {}
             );
         } catch (err) {
             document.getElementById('transferScanResult').innerHTML = `
@@ -1186,39 +1040,27 @@
             <div id="importModal" class="modal">
                 <div class="modal-content" style="max-width:500px;">
                     <h3>📥 Import Data</h3>
-                    <p>Pilih metode import data dari operator:</p>
-                    
                     <div class="import-area" onclick="showPasteArea()">
-                        📋 <strong>Paste dari Clipboard</strong><br>
-                        <small>Tempel kode yang sudah disalin dari operator</small>
+                        📋 <strong>Paste dari Clipboard</strong>
                     </div>
-                    
                     <div class="import-area" onclick="document.getElementById('importFileInput').click()">
-                        📁 <strong>Upload File JSON</strong><br>
-                        <small>Pilih file hasil export dari operator</small>
+                        📁 <strong>Upload File JSON</strong>
                     </div>
-                    
                     <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="importFromFile(this.files[0])">
-                    
                     <div id="importTextAreaArea" style="margin-top:15px; display:none;">
                         <textarea id="importPasteData" rows="3" style="width:100%; padding:8px; border-radius:8px; border:1px solid #ddd;" placeholder="Tempel kode data di sini..."></textarea>
                         <button onclick="processPastedData()" style="margin-top:10px; padding:6px 12px; background:#27ae60; color:white; border:none; border-radius:6px;">Proses Import</button>
                     </div>
-                    
                     <button onclick="closeImportModal()" style="margin-top:15px; padding:8px 20px; background:#95a5a6; color:white; border:none; border-radius:8px;">Tutup</button>
                 </div>
             </div>
         `;
-        
         document.body.insertAdjacentHTML('beforeend', modalHtml);
     }
     
     function showPasteArea() {
-        const textareaArea = document.getElementById('importTextAreaArea');
-        if (textareaArea) {
-            textareaArea.style.display = 'block';
-            document.getElementById('importPasteData').focus();
-        }
+        const area = document.getElementById('importTextAreaArea');
+        if (area) area.style.display = 'block';
     }
     
     function closeImportModal() {
@@ -1229,65 +1071,58 @@
     async function processPastedData() {
         const pasteData = document.getElementById('importPasteData').value.trim();
         if (!pasteData) {
-            alert('❌ Tidak ada data untuk diimport!');
+            alert('❌ Tidak ada data!');
             return;
         }
-        
         try {
             const decodedData = decodeURIComponent(atob(pasteData));
             const importedData = JSON.parse(decodedData);
-            
             if (importedData.type === 'TRANSFER_DATA' && importedData.reports) {
-                processImportData(importedData);
+                let newCount = 0;
+                importedData.reports.forEach(newReport => {
+                    if (!reports.some(r => r.id === newReport.id)) {
+                        reports.push(newReport);
+                        newCount++;
+                    }
+                });
+                saveToLocal();
+                closeImportModal();
+                alert(`✅ Import berhasil! ${newCount} laporan baru ditambahkan`);
+                renderAdminPanel();
             } else {
                 alert('❌ Format data tidak valid!');
             }
         } catch (err) {
-            alert('❌ Gagal membaca data! Pastikan kode yang di-paste benar.');
+            alert('❌ Gagal membaca data!');
         }
     }
     
     function importFromFile(file) {
         if (!file) return;
-        
         const reader = new FileReader();
         reader.onload = function(e) {
             try {
                 const importedData = JSON.parse(e.target.result);
                 if (importedData.type === 'TRANSFER_DATA' && importedData.reports) {
-                    processImportData(importedData);
+                    let newCount = 0;
+                    importedData.reports.forEach(newReport => {
+                        if (!reports.some(r => r.id === newReport.id)) {
+                            reports.push(newReport);
+                            newCount++;
+                        }
+                    });
+                    saveToLocal();
+                    closeImportModal();
+                    alert(`✅ Import berhasil! ${newCount} laporan baru ditambahkan`);
+                    renderAdminPanel();
                 } else {
                     alert('❌ Format file tidak valid!');
                 }
             } catch (err) {
-                alert('❌ Gagal membaca file! Format tidak valid.');
+                alert('❌ Gagal membaca file!');
             }
         };
         reader.readAsText(file);
-    }
-    
-    function processImportData(importedData) {
-        let newCount = 0;
-        let duplicateCount = 0;
-        
-        importedData.reports.forEach(newReport => {
-            const exists = reports.some(r => r.id === newReport.id);
-            if (!exists) {
-                reports.push(newReport);
-                newCount++;
-            } else {
-                duplicateCount++;
-            }
-        });
-        
-        saveToLocal();
-        closeImportModal();
-        
-        alert(`✅ Import berhasil!\n\n📝 Laporan baru: ${newCount}\n🔄 Duplikat (dilewati): ${duplicateCount}\n👤 Operator: ${importedData.operatorName}\n📋 Divisi: ${importedData.operatorDivisi}`);
-        
-        if (currentUser.role === 'admin') {
-            renderAdminPanel();
-        }
     }
     
     // ==================== EXPORT XLSX ====================
@@ -1297,15 +1132,12 @@
             'Tanggal': r.tanggal,
             'Operator': r.operatorName,
             'Divisi': r.divisi,
-            'Unique Code': getDailyUniqueCode(r.operatorName, r.tanggal, r.divisi, r.id),
             'Aktivitas': r.aktivitas,
             'Jam Mulai': r.mulai,
             'Jam Selesai': r.selesai,
             'Total Jam': r.totalJam,
             'Status': r.status,
-            'Catatan': r.catatan || '',
-            'Sync Status': r.synced ? 'Tersync' : 'Belum',
-            'Sync Date': r.syncDate ? new Date(r.syncDate).toLocaleString('id') : '-'
+            'Catatan': r.catatan || ''
         }));
         
         if (exportData.length === 0) {
@@ -1316,7 +1148,6 @@
         const ws = XLSX.utils.json_to_sheet(exportData);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Daily Report');
-        
         XLSX.writeFile(wb, `daily_report_all_${new Date().toISOString().split('T')[0]}.xlsx`);
     }
     
@@ -1332,195 +1163,18 @@
         const exportData = opReports.map(r => ({
             'ID': r.id,
             'Tanggal': r.tanggal,
-            'Unique Code': getDailyUniqueCode(r.operatorName, r.tanggal, r.divisi, r.id),
             'Aktivitas': r.aktivitas,
             'Jam Mulai': r.mulai,
             'Jam Selesai': r.selesai,
             'Total Jam': r.totalJam,
             'Status': r.status,
-            'Catatan': r.catatan || '',
-            'Sync Status': r.synced ? 'Tersync' : 'Belum'
+            'Catatan': r.catatan || ''
         }));
         
         const ws = XLSX.utils.json_to_sheet(exportData);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, `${operatorData?.name || operatorUsername}`);
-        
         XLSX.writeFile(wb, `daily_report_${operatorData?.name || operatorUsername}_${new Date().toISOString().split('T')[0]}.xlsx`);
-    }
-    
-    function exportSyncQueueToExcel() {
-        if (syncQueue.length === 0) {
-            alert('Belum ada data sync queue!');
-            return;
-        }
-        
-        const exportData = syncQueue.map(s => ({
-            'ID': s.id,
-            'Tanggal': s.tanggal,
-            'Unique Code': s.uniqueCode,
-            'Operator': s.operatorName,
-            'Divisi': s.divisi,
-            'Aktivitas': s.aktivitas,
-            'Total Jam': s.totalJam,
-            'Sync Date': new Date(s.syncDate).toLocaleString('id')
-        }));
-        
-        const ws = XLSX.utils.json_to_sheet(exportData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Sync Queue');
-        
-        XLSX.writeFile(wb, `daily_report_sync_queue_${new Date().toISOString().split('T')[0]}.xlsx`);
-    }
-    
-    // ==================== SCANNER FUNCTIONS ====================
-    async function startScanner() {
-        if (html5QrCode && isScanning) {
-            await stopScanner();
-        }
-        
-        try {
-            html5QrCode = new Html5Qrcode("preview");
-            
-            await html5QrCode.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 250, height: 250 } },
-                (decodedText) => handleScanResult(decodedText),
-                () => {}
-            );
-            
-            isScanning = true;
-            scanActive = true;
-            
-            const startBtn = document.getElementById('btnStartScan');
-            const stopBtn = document.getElementById('btnStopScan');
-            const scanResultDiv = document.getElementById('scanResult');
-            
-            if (startBtn) startBtn.disabled = true;
-            if (stopBtn) stopBtn.disabled = false;
-            if (scanResultDiv) {
-                scanResultDiv.innerHTML = "📷 Scanner aktif - siap scan QR Code";
-                scanResultDiv.className = "scan-result info";
-            }
-            
-        } catch (err) {
-            const scanResultDiv = document.getElementById('scanResult');
-            if (scanResultDiv) {
-                scanResultDiv.innerHTML = `❌ Gagal mengakses kamera: ${err.message}`;
-                scanResultDiv.className = "scan-result error";
-            }
-        }
-    }
-    
-    async function stopScanner() {
-        if (autoStopTimeout) clearTimeout(autoStopTimeout);
-        
-        if (html5QrCode && isScanning) {
-            try {
-                await html5QrCode.stop();
-                html5QrCode.clear();
-            } catch (err) {}
-            isScanning = false;
-            scanActive = false;
-        }
-        
-        const startBtn = document.getElementById('btnStartScan');
-        const stopBtn = document.getElementById('btnStopScan');
-        const scanResultDiv = document.getElementById('scanResult');
-        
-        if (startBtn) startBtn.disabled = false;
-        if (stopBtn) stopBtn.disabled = true;
-        if (scanResultDiv && scanResultDiv.innerHTML !== "✅ Berhasil sync, kamera otomatis dimatikan!") {
-            scanResultDiv.innerHTML = "⏹️ Scanner dihentikan. Klik 'Start Scanner' untuk memulai.";
-            scanResultDiv.className = "scan-result warning";
-        }
-        
-        const previewDiv = document.getElementById('preview');
-        if (previewDiv) previewDiv.innerHTML = '';
-        html5QrCode = null;
-    }
-    
-    async function autoStopScannerAfterSync(message) {
-        const scanResultDiv = document.getElementById('scanResult');
-        if (scanResultDiv) {
-            scanResultDiv.innerHTML = message;
-            scanResultDiv.className = "scan-result success";
-        }
-        
-        setTimeout(async () => {
-            if (scanResultDiv && isScanning) {
-                scanResultDiv.innerHTML = "✅ Berhasil sync, kamera otomatis dimatikan!";
-            }
-            await stopScanner();
-        }, 1500);
-    }
-    
-    function handleScanResult(decodedText) {
-        const scanResultDiv = document.getElementById('scanResult');
-        
-        try {
-            const data = JSON.parse(decodedText);
-            
-            if (data.type === 'DAILY_REPORT_SYNC') {
-                let report = null;
-                
-                if (data.id) report = reports.find(r => r.id === data.id);
-                if (!report && data.uniqueCode) {
-                    report = reports.find(r => getDailyUniqueCode(r.operatorName, r.tanggal, r.divisi, r.id) === data.uniqueCode);
-                }
-                if (!report && data.operatorName && data.tanggal && data.aktivitas) {
-                    report = reports.find(r => r.operatorName === data.operatorName && r.tanggal === data.tanggal && r.aktivitas === data.aktivitas);
-                }
-                
-                if (report) {
-                    if (report.synced) {
-                        scanResultDiv.innerHTML = `⚠️ Laporan ${report.operatorName} tgl ${report.tanggal} sudah di-sync!`;
-                        scanResultDiv.className = "scan-result error";
-                        setTimeout(() => autoStopScannerAfterSync(`⚠️ Sudah di-sync`), 2000);
-                    } else if (parseFloat(report.totalJam) >= 8.0) {
-                        report.synced = true;
-                        report.syncDate = new Date().toISOString();
-                        
-                        syncQueue.unshift({
-                            id: report.id,
-                            uniqueCode: getDailyUniqueCode(report.operatorName, report.tanggal, report.divisi, report.id),
-                            operator: report.operator,
-                            operatorName: report.operatorName,
-                            divisi: report.divisi,
-                            tanggal: report.tanggal,
-                            aktivitas: report.aktivitas,
-                            totalJam: report.totalJam,
-                            syncDate: report.syncDate
-                        });
-                        
-                        saveToLocal();
-                        scanResultDiv.innerHTML = `✅ BERHASIL! ${report.operatorName} - ${report.tanggal}\nTotal jam: ${report.totalJam} jam`;
-                        scanResultDiv.className = "scan-result success";
-                        
-                        if (currentUser?.role === 'admin') setTimeout(() => renderAdminPanel(), 1500);
-                        autoStopScannerAfterSync(`✅ Sync berhasil!`);
-                    } else {
-                        scanResultDiv.innerHTML = `❌ GAGAL! Total jam: ${report.totalJam} jam (minimal 8 jam)`;
-                        scanResultDiv.className = "scan-result error";
-                        setTimeout(() => autoStopScannerAfterSync(`❌ Total jam < 8 jam`), 2000);
-                    }
-                } else {
-                    scanResultDiv.innerHTML = `❌ QR Code tidak valid! Laporan tidak ditemukan.`;
-                    scanResultDiv.className = "scan-result error";
-                    setTimeout(() => autoStopScannerAfterSync(`❌ Laporan tidak ditemukan`), 2000);
-                }
-            } else {
-                scanResultDiv.innerHTML = `❌ QR Code tidak valid!`;
-                scanResultDiv.className = "scan-result error";
-                setTimeout(() => autoStopScannerAfterSync(`❌ QR tidak valid`), 2000);
-            }
-        } catch (e) {
-            scanResultDiv.innerHTML = `❌ QR Code tidak dapat dibaca!`;
-            scanResultDiv.className = "scan-result error";
-            setTimeout(() => autoStopScannerAfterSync(`❌ Format QR salah`), 2000);
-        }
-        
-        if (navigator.vibrate) navigator.vibrate(200);
     }
     
     // ==================== OPERATOR PANEL ====================
@@ -1534,63 +1188,15 @@
         });
         
         let filteredReports = userReports;
-        if (currentDateFilter) filteredReports = userReports.filter(r => r.tanggal === currentDateFilter);
-        
-        const eligibleReports = filteredReports.filter(r => isEligibleForQR(r));
-        const syncedReports = filteredReports.filter(r => r.synced === true);
+        if (currentDateFilter) {
+            filteredReports = userReports.filter(r => r.tanggal === currentDateFilter);
+        }
         
         const availableDates = [...new Set(userReports.map(r => r.tanggal))].sort((a, b) => {
             const dateA = a.split('/').reverse().join('-');
             const dateB = b.split('/').reverse().join('-');
             return dateB.localeCompare(dateA);
         });
-        
-        let qrHtml = '';
-        if (eligibleReports.length > 0) {
-            eligibleReports.forEach(report => {
-                const qrId = `qr_${report.id}`;
-                const uniqueCode = getDailyUniqueCode(report.operatorName, report.tanggal, report.divisi, report.id);
-                qrHtml += `
-                    <div class="qr-container" id="qrContainer_${report.id}">
-                        <div class="qr-title">📱 QR Code Sync - ${report.tanggal}</div>
-                        <div class="qr-status success">
-                            ✅ Aktivitas memenuhi syarat! (Total Jam: ${report.totalJam} jam)<br>
-                            <small>${report.aktivitas?.substring(0,40) || '-'}</small><br>
-                            <small>Kode Unik: ${uniqueCode}</small>
-                        </div>
-                        <div class="qr-code" id="${qrId}"></div>
-                        <button class="sync-btn" onclick="markAsSynced(${report.id})">✅ Tandai Sudah Disync</button>
-                    </div>
-                `;
-            });
-        } else {
-            qrHtml = `
-                <div class="qr-container">
-                    <div class="qr-title">📱 QR Code Sync</div>
-                    <div class="qr-status warning">
-                        ⚠️ Belum ada aktivitas dengan durasi minimal 8 jam.<br>
-                        Silakan isi data pada tabel di bawah ini terlebih dahulu.
-                    </div>
-                </div>
-            `;
-        }
-        
-        if (syncedReports.length > 0) {
-            qrHtml += `
-                <div class="qr-container">
-                    <div class="qr-title">✅ Riwayat Sync</div>
-                    ${syncedReports.map(r => {
-                        const uniqueCode = getDailyUniqueCode(r.operatorName, r.tanggal, r.divisi, r.id);
-                        return `
-                            <div class="qr-status info" style="margin:5px 0;">
-                                📅 ${r.tanggal} - ${r.aktivitas?.substring(0,30) || '-'} (${r.totalJam} jam) - TERSYNC ✓<br>
-                                <small>Kode: ${uniqueCode}</small>
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            `;
-        }
         
         let tableHtml = `
             <div class="spreadsheet-card">
@@ -1608,7 +1214,7 @@
                 <div class="spreadsheet-wrapper">
                     <table class="spreadsheet-table">
                         <thead>
-                            <tr><th>Tanggal</th><th>Aktivitas</th><th>Mulai</th><th>Selesai</th><th>Total Jam</th><th>Status</th><th>Catatan</th><th>Sync</th><th>Aksi</th></tr>
+                            <tr><th>Tanggal</th><th>Aktivitas</th><th>Mulai</th><th>Selesai</th><th>Total Jam</th><th>Status</th><th>Catatan</th><th>Aksi</th></tr>
                         </thead>
                         <tbody>
                             ${filteredReports.map(r => {
@@ -1630,10 +1236,8 @@
                                                 <option value="Progress" ${r.status === 'Progress' ? 'selected' : ''}>Progress</option>
                                                 <option value="Done" ${r.status === 'Done' ? 'selected' : ''}>Done</option>
                                             </select>
-                                        </select>
                                         </td>
                                         <td contenteditable="true" onblur="updateField(${r.id}, 'catatan', this.textContent)">${r.catatan || ''}</td>
-                                        <td>${r.synced ? '✅ Tersync' : (isEligibleForQR(r) ? '📱 Siap Sync' : '⏳ Belum')}</td>
                                         <td style="white-space: nowrap;">
                                             <button onclick="clearRow(${r.id})" style="background:#e67e22; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; margin-right:4px; font-size:11px;">🗑️ Kosongkan</button>
                                             <button onclick="deleteRow(${r.id})" style="background:#e74c3c; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">❌ Hapus</button>
@@ -1641,25 +1245,14 @@
                                     </tr>
                                 `;
                             }).join('')}
-                            ${filteredReports.length === 0 ? '<tr><td colspan="9" style="text-align:center; padding: 30px;">📋 Belum ada data. Klik "Tambah Baris Baru" untuk memulai</td></tr>' : ''}
+                            ${filteredReports.length === 0 ? '<tr><td colspan="8" style="text-align:center; padding: 30px;">📋 Belum ada data. Klik "Tambah Baris Baru" untuk memulai</td></tr>' : ''}
                         </tbody>
                     </table>
                 </div>
             </div>
         `;
         
-        document.getElementById('mainContent').innerHTML = qrHtml + tableHtml;
-        
-        setTimeout(() => {
-            eligibleReports.forEach(report => {
-                const qrId = `qr_${report.id}`;
-                const element = document.getElementById(qrId);
-                if (element) {
-                    const qrData = generateQRData(report);
-                    generateQRCode(element, qrData, 200);
-                }
-            });
-        }, 100);
+        document.getElementById('mainContent').innerHTML = tableHtml;
     }
     
     window.filterByDate = function(date) {
@@ -1693,35 +1286,8 @@
         }
     };
     
-    window.markAsSynced = function(id) {
-        const report = reports.find(r => r.id === id);
-        if (report && isEligibleForQR(report)) {
-            report.synced = true;
-            report.syncDate = new Date().toISOString();
-            
-            syncQueue.unshift({
-                id: report.id,
-                uniqueCode: getDailyUniqueCode(report.operatorName, report.tanggal, report.divisi, report.id),
-                operator: report.operator,
-                operatorName: report.operatorName,
-                divisi: report.divisi,
-                tanggal: report.tanggal,
-                aktivitas: report.aktivitas,
-                totalJam: report.totalJam,
-                syncDate: report.syncDate
-            });
-            
-            saveToLocal();
-            alert(`✅ Laporan "${report.aktivitas}" tanggal ${report.tanggal} telah ditandai sync!`);
-            renderOperatorPanel();
-        } else if (report && parseFloat(report.totalJam) < 8.0) {
-            alert(`⚠️ Laporan belum memenuhi syarat! Total jam: ${report.totalJam} jam (minimal 8 jam)`);
-        }
-    };
-    
     window.addRowOperator = function() {
         const today = getTodayDate();
-        
         const newId = reports.length > 0 ? Math.max(...reports.map(r => r.id)) + 1 : 1;
         const newRow = {
             id: newId,
@@ -1735,7 +1301,6 @@
             status: 'Pending',
             catatan: '',
             totalJam: '0.0',
-            synced: false,
             createdAt: new Date().toISOString()
         };
         reports.push(newRow);
@@ -1749,7 +1314,7 @@
             if (rows.length > 0) rows[rows.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 100);
         
-        alert(`✅ Baris baru telah ditambahkan untuk tanggal ${today}!\n\nSilakan isi aktivitas, jam mulai, dan jam selesai.`);
+        alert(`✅ Baris baru untuk tanggal ${today} telah ditambahkan!`);
     };
     
     window.clearRow = function(rowId) {
@@ -1778,50 +1343,28 @@
     
     // ==================== ADMIN PANEL ====================
     function renderAdminPanel() {
-        const syncedItems = syncQueue;
-        const syncedReportsCount = reports.filter(r => r.synced === true).length;
-        
         let content = `
-            <div class="scanner-container" id="scanner-container">
-                <div class="qr-title">📷 Scanner QR Code</div>
+            <div class="scanner-container">
+                <div class="qr-title">📷 Transfer Data dari Operator</div>
                 <div class="scanner-buttons">
-                    <button class="camera-btn start" onclick="startScanner()">▶️ Start Scanner (Sync)</button>
-                    <button class="camera-btn stop" onclick="stopScanner()" disabled>⏹️ Stop Scanner</button>
-                    <button class="camera-btn" onclick="startTransferScanner()" style="background:#9b59b6;">📱 Scan Transfer QR</button>
-                    <button class="camera-btn" onclick="showImportModal()" style="background:#f39c12;">📥 Import Data</button>
+                    <button class="camera-btn start" onclick="startTransferScanner()">📱 Scan QR Transfer</button>
+                    <button class="camera-btn" onclick="showImportModal()" style="background:#f39c12;">📥 Import Data Manual</button>
                 </div>
-                <div class="video-container">
-                    <div id="preview"></div>
-                </div>
-                <div class="scan-result info" id="scanResult">🔍 Klik Start Scanner untuk memulai</div>
+                <div class="scan-result info" id="scanResult">🔍 Klik "Scan QR Transfer" untuk mulai</div>
             </div>
             
             <div class="qr-container">
                 <div class="qr-title">📋 Manajemen Data</div>
                 <div class="btn-group">
                     <button class="toolbar-btn reset" onclick="resetAllData()">🗑️ Reset Semua Data</button>
-                    <button class="toolbar-btn sync-reset" onclick="resetSyncStatusOnly()">🔄 Reset Status Sync (${syncedReportsCount} laporan)</button>
-                    <button class="toolbar-btn history-reset" onclick="resetSyncHistoryOnly()">📋 Reset Riwayat Sync (${syncedItems.length} item)</button>
-                    <button class="toolbar-btn excel" onclick="exportSyncQueueToExcel()">📎 Export Sync Queue XLSX</button>
+                    <button class="toolbar-btn excel" onclick="exportAllToExcel()">📎 Export Semua XLSX</button>
                 </div>
                 <div class="reset-info">
-                    💡 <strong>Keterangan:</strong><br>
-                    • <strong style="color:#e74c3c;">Reset Semua Data</strong> = Hapus semua laporan + riwayat sync<br>
-                    • <strong style="color:#e67e22;">Reset Status Sync</strong> = Laporan bisa di-scan ULANG (tanpa hapus data)<br>
-                    • <strong style="color:#3498db;">Reset Riwayat Sync</strong> = Hapus catatan scan QR saja
+                    💡 <strong>Cara Transfer Data dari Operator:</strong><br>
+                    • Operator klik "📱 QR Transfer" → Tunjukkan QR Code ke Admin<br>
+                    • Admin klik "📱 Scan QR Transfer" → Scan QR Code operator<br>
+                    • Atau operator kirim data via WA/Email, Admin import manual
                 </div>
-            </div>
-            
-            <div class="qr-container">
-                <div class="qr-title">📋 Riwayat Sync dari Operator</div>
-                ${syncedItems.length === 0 ? '<div class="qr-status info">Belum ada data sync dari operator</div>' : ''}
-                ${syncedItems.map(s => `
-                    <div class="qr-status success" style="margin:8px 0;">
-                        ✅ ${s.tanggal} - ${s.operatorName} (${s.divisi}) - "${s.aktivitas?.substring(0,40) || '-'}" - ${s.totalJam} jam<br>
-                        <small>Unique Code: ${s.uniqueCode}</small>
-                        <br><small>Sync: ${new Date(s.syncDate).toLocaleString('id')}</small>
-                    </div>
-                `).join('')}
             </div>
             
             <div class="tabs-container">
@@ -1839,7 +1382,7 @@
                             <div class="spreadsheet-wrapper">
                                 <table class="spreadsheet-table">
                                     <thead>
-                                        <tr><th>Tanggal</th><th>Unique Code</th><th>Aktivitas</th><th>Mulai</th><th>Selesai</th><th>Total Jam</th><th>Status</th><th>Catatan</th><th>Sync Status</th></tr>
+                                        <tr><th>Tanggal</th><th>Unique Code</th><th>Aktivitas</th><th>Mulai</th><th>Selesai</th><th>Total Jam</th><th>Status</th><th>Catatan</th></tr>
                                     </thead>
                                     <tbody>
                                         ${opReports.map(r => {
@@ -1854,11 +1397,10 @@
                                                     <td class="number-cell">${r.totalJam} jam</td>
                                                     <td><span class="status-badge ${r.status === 'Done' ? 'status-done' : r.status === 'Progress' ? 'status-progress' : 'status-pending'}">${r.status}</span></td>
                                                     <td>${r.catatan || '-'}</td>
-                                                    <td>${r.synced ? '<span style="color:green;">✅ Tersync</span>' : (parseFloat(r.totalJam) >= 8 ? '📱 Siap Sync' : '⏳ Belum')}</td>
                                                 </tr>
                                             `;
                                         }).join('')}
-                                        ${opReports.length === 0 ? '<tr><td colspan="9" style="text-align:center;">Belum ada data laporan</td></tr>' : ''}
+                                        ${opReports.length === 0 ? '<tr><td colspan="8" style="text-align:center;">Belum ada data laporan</td></tr>' : ''}
                                     </tbody>
                                 </table>
                             </div>
@@ -1925,7 +1467,10 @@
     }
     
     async function logout() {
-        await stopScanner();
+        if (transferScanner) {
+            await transferScanner.stop().catch(() => {});
+            transferScanner = null;
+        }
         currentUser = null;
         currentDateFilter = '';
         document.getElementById('appContainer').style.display = 'none';
@@ -1974,25 +1519,19 @@
     
     loadFromLocal();
     
-    // Expose functions globally
-    window.startScanner = startScanner;
-    window.stopScanner = stopScanner;
-    window.updateField = updateField;
-    window.updateTotalJamField = updateTotalJamField;
-    window.markAsSynced = markAsSynced;
-    window.addRowOperator = addRowOperator;
-    window.switchTab = switchTab;
-    window.handleScanResult = handleScanResult;
-    window.exportAllToExcel = exportAllToExcel;
-    window.exportOperatorToExcel = exportOperatorToExcel;
-    window.exportSyncQueueToExcel = exportSyncQueueToExcel;
-    window.resetAllData = resetAllData;
-    window.resetSyncStatusOnly = resetSyncStatusOnly;
-    window.resetSyncHistoryOnly = resetSyncHistoryOnly;
+    // Expose functions
+    window.handleLogin = handleLogin;
+    window.logout = logout;
     window.filterByDate = filterByDate;
     window.clearDateFilter = clearDateFilter;
+    window.updateField = updateField;
+    window.updateTotalJamField = updateTotalJamField;
+    window.addRowOperator = addRowOperator;
     window.clearRow = clearRow;
     window.deleteRow = deleteRow;
+    window.resetAllData = resetAllData;
+    window.exportAllToExcel = exportAllToExcel;
+    window.exportOperatorToExcel = exportOperatorToExcel;
     window.sendViaWhatsApp = sendViaWhatsApp;
     window.sendViaEmail = sendViaEmail;
     window.copyToClipboard = copyToClipboard;
@@ -2004,7 +1543,7 @@
     window.closeImportModal = closeImportModal;
     window.showPasteArea = showPasteArea;
     window.processPastedData = processPastedData;
-    window.processImportData = processImportData;
+    window.switchTab = switchTab;
 </script>
 </body>
 </html>
