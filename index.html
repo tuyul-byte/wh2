@@ -645,6 +645,16 @@
             flex-wrap: wrap;
             margin-bottom: 10px;
         }
+
+        .badge-date {
+            display: inline-block;
+            background: #1e3c72;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 5px;
+        }
     </style>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
@@ -736,7 +746,6 @@
     let scanActive = false;
     let autoStopTimeout = null;
     let currentDateFilter = '';
-    let lastDate = '';
     
     // Load data
     function loadFromLocal() {
@@ -828,46 +837,11 @@
         return `${day}/${month}/${year}`;
     }
     
-    // Cek apakah tanggal berganti
-    function checkAndResetForNewDay() {
-        const today = getTodayDate();
-        const existingToday = reports.find(r => r.operator === currentUser?.username && r.tanggal === today);
-        
-        if (!existingToday && currentUser && currentUser.role === 'operator') {
-            const newId = reports.length > 0 ? Math.max(...reports.map(r => r.id)) + 1 : 1;
-            const newRow = {
-                id: newId,
-                operator: currentUser.username,
-                operatorName: currentUser.name,
-                divisi: currentUser.divisi,
-                tanggal: today,
-                aktivitas: '',
-                mulai: '',
-                selesai: '',
-                status: 'Pending',
-                catatan: '',
-                totalJam: '0.0',
-                synced: false,
-                createdAt: new Date().toISOString()
-            };
-            reports.push(newRow);
-            saveToLocal();
-            
-            if (lastDate && lastDate !== today) {
-                setTimeout(() => {
-                    alert(`📅 Tanggal berganti dari ${lastDate} menjadi ${today}\nForm input telah dikosongkan untuk hari ini.\nData hari sebelumnya tetap tersimpan.`);
-                }, 100);
-            }
-        }
-        
-        lastDate = today;
-    }
-    
-    // Fungsi untuk mendapatkan kode unik per operator per hari
-    function getDailyUniqueCode(operatorName, tanggal, divisi) {
+    // Fungsi untuk mendapatkan kode unik per operator per hari per id
+    function getDailyUniqueCode(operatorName, tanggal, divisi, id) {
         const operatorCode = operatorName.toUpperCase().substring(0, 5);
         const divisiCode = divisi.substring(0, 2).toUpperCase();
-        return `${operatorCode}_${tanggal.replace(/\//g, '-')}_${divisiCode}`;
+        return `${operatorCode}_${tanggal.replace(/\//g, '-')}_${divisiCode}_${id}`;
     }
     
     // Syarat QR: total jam >= 8 jam
@@ -878,21 +852,22 @@
     
     // Generate data QR
     function generateQRData(report) {
-        const uniqueCode = getDailyUniqueCode(report.operatorName, report.tanggal, report.divisi);
+        const uniqueCode = getDailyUniqueCode(report.operatorName, report.tanggal, report.divisi, report.id);
         
         return JSON.stringify({
             type: 'DAILY_REPORT_SYNC',
+            version: '1.0',
             uniqueCode: uniqueCode,
             id: report.id,
             operator: report.operator,
             operatorName: report.operatorName,
             divisi: report.divisi,
             tanggal: report.tanggal,
-            aktivitas: report.aktivitas,
+            aktivitas: report.aktivitas.substring(0, 50),
             totalJam: report.totalJam,
             status: report.status,
             timestamp: new Date().toISOString(),
-            hash: btoa(`${uniqueCode}_${report.id}_${report.tanggal}`)
+            check: btoa(`${report.id}_${report.operator}_${report.tanggal}`)
         });
     }
     
@@ -917,7 +892,7 @@
             'Tanggal': r.tanggal,
             'Operator': r.operatorName,
             'Divisi': r.divisi,
-            'Unique Code': getDailyUniqueCode(r.operatorName, r.tanggal, r.divisi),
+            'Unique Code': getDailyUniqueCode(r.operatorName, r.tanggal, r.divisi, r.id),
             'Aktivitas': r.aktivitas,
             'Jam Mulai': r.mulai,
             'Jam Selesai': r.selesai,
@@ -952,7 +927,7 @@
         const exportData = opReports.map(r => ({
             'ID': r.id,
             'Tanggal': r.tanggal,
-            'Unique Code': getDailyUniqueCode(r.operatorName, r.tanggal, r.divisi),
+            'Unique Code': getDailyUniqueCode(r.operatorName, r.tanggal, r.divisi, r.id),
             'Aktivitas': r.aktivitas,
             'Jam Mulai': r.mulai,
             'Jam Selesai': r.selesai,
@@ -978,7 +953,7 @@
         const exportData = syncQueue.map(s => ({
             'ID': s.id,
             'Tanggal': s.tanggal,
-            'Unique Code': getDailyUniqueCode(s.operatorName, s.tanggal, s.divisi),
+            'Unique Code': s.uniqueCode,
             'Operator': s.operatorName,
             'Divisi': s.divisi,
             'Aktivitas': s.aktivitas,
@@ -1091,30 +1066,37 @@
         
         try {
             const data = JSON.parse(decodedText);
+            
             if (data.type === 'DAILY_REPORT_SYNC') {
-                let report = reports.find(r => r.id === data.id);
+                let report = null;
                 
+                // Strategi 1: Cari berdasarkan ID
+                if (data.id) {
+                    report = reports.find(r => r.id === data.id);
+                }
+                
+                // Strategi 2: Cari berdasarkan uniqueCode
                 if (!report && data.uniqueCode) {
                     report = reports.find(r => {
-                        const uniqueCode = getDailyUniqueCode(r.operatorName, r.tanggal, r.divisi);
-                        return uniqueCode === data.uniqueCode && !r.synced;
+                        const uniqueCode = getDailyUniqueCode(r.operatorName, r.tanggal, r.divisi, r.id);
+                        return uniqueCode === data.uniqueCode;
                     });
                 }
                 
                 if (report) {
                     if (report.synced) {
                         if (scanResultDiv) {
-                            scanResultDiv.innerHTML = `⚠️ Laporan dari ${data.operatorName} tanggal ${data.tanggal} sudah pernah di-sync!`;
+                            scanResultDiv.innerHTML = `⚠️ Laporan dari ${report.operatorName} tanggal ${report.tanggal} sudah pernah di-sync!`;
                             scanResultDiv.className = "scan-result error";
                         }
-                        setTimeout(() => autoStopScannerAfterSync(`⚠️ Laporan sudah pernah di-sync, kamera dimatikan.`), 2000);
+                        setTimeout(() => autoStopScannerAfterSync(`⚠️ Laporan sudah pernah di-sync`), 2000);
                     } else if (parseFloat(report.totalJam) >= 8.0) {
                         report.synced = true;
                         report.syncDate = new Date().toISOString();
                         
                         syncQueue.unshift({
                             id: report.id,
-                            uniqueCode: getDailyUniqueCode(report.operatorName, report.tanggal, report.divisi),
+                            uniqueCode: getDailyUniqueCode(report.operatorName, report.tanggal, report.divisi, report.id),
                             operator: report.operator,
                             operatorName: report.operatorName,
                             divisi: report.divisi,
@@ -1126,40 +1108,46 @@
                         
                         saveToLocal();
                         
-                        autoStopScannerAfterSync(`✅ BERHASIL! Laporan ${data.operatorName} - ${data.tanggal} telah di-sync. Total jam: ${data.totalJam} jam.<br>Kamera akan mati otomatis...`);
+                        if (scanResultDiv) {
+                            scanResultDiv.innerHTML = `✅ BERHASIL! Laporan ${report.operatorName} - ${report.tanggal} (${report.aktivitas.substring(0,30)}) telah di-sync.\nTotal jam: ${report.totalJam} jam.\nKamera akan mati otomatis...`;
+                            scanResultDiv.className = "scan-result success";
+                        }
                         
                         if (currentUser && currentUser.role === 'admin') {
                             setTimeout(() => {
                                 renderAdminPanel();
-                            }, 2000);
+                            }, 1500);
                         }
+                        
+                        autoStopScannerAfterSync(`✅ Sync berhasil!`);
                     } else {
                         if (scanResultDiv) {
-                            scanResultDiv.innerHTML = `❌ GAGAL! Laporan ${data.operatorName} - ${data.tanggal} belum memenuhi syarat minimal 8 jam. Total jam: ${report.totalJam} jam`;
+                            scanResultDiv.innerHTML = `❌ GAGAL! Laporan ${report.operatorName} - ${report.tanggal} belum memenuhi syarat.\nMinimal 8 jam (Total: ${report.totalJam} jam)`;
                             scanResultDiv.className = "scan-result error";
                         }
-                        setTimeout(() => autoStopScannerAfterSync(`❌ Sync gagal, kamera dimatikan.`), 2000);
+                        setTimeout(() => autoStopScannerAfterSync(`❌ Total jam ${report.totalJam} (<8 jam)`), 2000);
                     }
                 } else {
                     if (scanResultDiv) {
-                        scanResultDiv.innerHTML = `❌ QR Code tidak valid! Laporan tidak ditemukan atau sudah di-sync.`;
+                        scanResultDiv.innerHTML = `❌ QR Code tidak valid! Laporan tidak ditemukan.\n\nPastikan:\n1. Laporan sudah dibuat\n2. Total jam ≥ 8 jam\n3. Laporan belum di-sync`;
                         scanResultDiv.className = "scan-result error";
                     }
-                    setTimeout(() => autoStopScannerAfterSync(`❌ QR tidak valid, kamera dimatikan.`), 2000);
+                    setTimeout(() => autoStopScannerAfterSync(`❌ Laporan tidak ditemukan`), 3000);
                 }
             } else {
                 if (scanResultDiv) {
                     scanResultDiv.innerHTML = `❌ QR Code tidak valid! Bukan laporan daily report.`;
                     scanResultDiv.className = "scan-result error";
                 }
-                setTimeout(() => autoStopScannerAfterSync(`❌ QR tidak valid, kamera dimatikan.`), 2000);
+                setTimeout(() => autoStopScannerAfterSync(`❌ QR tidak valid`), 2000);
             }
         } catch (e) {
+            console.error("Error parsing QR:", e);
             if (scanResultDiv) {
-                scanResultDiv.innerHTML = `❌ QR Code tidak dapat dibaca! Format tidak sesuai.`;
+                scanResultDiv.innerHTML = `❌ QR Code tidak dapat dibaca! Format tidak sesuai.\nPastikan QR Code dari sistem ini.`;
                 scanResultDiv.className = "scan-result error";
             }
-            setTimeout(() => autoStopScannerAfterSync(`❌ Format QR salah, kamera dimatikan.`), 2000);
+            setTimeout(() => autoStopScannerAfterSync(`❌ Format QR salah`), 2000);
         }
         
         if (navigator.vibrate) navigator.vibrate(200);
@@ -1167,15 +1155,18 @@
     
     // ==================== OPERATOR PANEL ====================
     function renderOperatorPanel() {
-        checkAndResetForNewDay();
-        
         let userReports = reports.filter(r => r.operator === currentUser.username);
         userReports.sort((a, b) => {
+            // Urutkan dari tanggal terbaru ke terlama, lalu dari ID terbaru
             const dateA = a.tanggal.split('/').reverse().join('-');
             const dateB = b.tanggal.split('/').reverse().join('-');
+            if (dateA === dateB) {
+                return b.id - a.id;
+            }
             return dateB.localeCompare(dateA);
         });
         
+        // Filter berdasarkan tanggal jika ada
         let filteredReports = userReports;
         if (currentDateFilter) {
             filteredReports = userReports.filter(r => r.tanggal === currentDateFilter);
@@ -1184,6 +1175,7 @@
         const eligibleReports = filteredReports.filter(r => isEligibleForQR(r));
         const syncedReports = filteredReports.filter(r => r.synced === true);
         
+        // Kumpulkan semua tanggal yang tersedia untuk filter
         const availableDates = [...new Set(userReports.map(r => r.tanggal))].sort((a, b) => {
             const dateA = a.split('/').reverse().join('-');
             const dateB = b.split('/').reverse().join('-');
@@ -1194,12 +1186,13 @@
         if (eligibleReports.length > 0) {
             eligibleReports.forEach(report => {
                 const qrId = `qr_${report.id}`;
-                const uniqueCode = getDailyUniqueCode(report.operatorName, report.tanggal, report.divisi);
+                const uniqueCode = getDailyUniqueCode(report.operatorName, report.tanggal, report.divisi, report.id);
                 qrHtml += `
                     <div class="qr-container" id="qrContainer_${report.id}">
                         <div class="qr-title">📱 QR Code Sync - ${report.tanggal}</div>
                         <div class="qr-status success">
                             ✅ Aktivitas memenuhi syarat! (Total Jam: ${report.totalJam} jam)<br>
+                            <small>${report.aktivitas.substring(0,40)}</small><br>
                             <small>Kode Unik: ${uniqueCode}</small>
                         </div>
                         <div class="qr-code" id="${qrId}"></div>
@@ -1213,7 +1206,7 @@
                     <div class="qr-title">📱 QR Code Sync</div>
                     <div class="qr-status warning">
                         ⚠️ Belum ada aktivitas dengan durasi minimal 8 jam.<br>
-                        Silakan isi jam mulai dan selesai (contoh: 08:00 - 16:00 atau lebih).
+                        Silakan isi data pada tabel di bawah ini terlebih dahulu.
                     </div>
                 </div>
             `;
@@ -1224,7 +1217,7 @@
                 <div class="qr-container">
                     <div class="qr-title">✅ Riwayat Sync</div>
                     ${syncedReports.map(r => {
-                        const uniqueCode = getDailyUniqueCode(r.operatorName, r.tanggal, r.divisi);
+                        const uniqueCode = getDailyUniqueCode(r.operatorName, r.tanggal, r.divisi, r.id);
                         return `
                             <div class="qr-status info" style="margin:5px 0;">
                                 📅 ${r.tanggal} - ${r.aktivitas.substring(0,30)} (${r.totalJam} jam) - TERSYNC ✓<br>
@@ -1239,7 +1232,7 @@
         let tableHtml = `
             <div class="spreadsheet-card">
                 <div class="spreadsheet-toolbar">
-                    <button class="toolbar-btn" onclick="addRowOperator()">➕ Tambah Baris</button>
+                    <button class="toolbar-btn" onclick="addRowOperator()">➕ Tambah Baris Baru</button>
                     <button class="toolbar-btn excel" onclick="exportOperatorToExcel('${currentUser.username}')">📎 Export XLSX</button>
                     <div class="search-container">
                         <select id="dateFilterSelect" class="search-input" onchange="filterByDate(this.value)">
@@ -1256,13 +1249,13 @@
                         </thead>
                         <tbody>
                             ${filteredReports.map(r => {
-                                const uniqueCode = getDailyUniqueCode(r.operatorName, r.tanggal, r.divisi);
+                                const uniqueCode = getDailyUniqueCode(r.operatorName, r.tanggal, r.divisi, r.id);
                                 return `
                                     <tr>
                                         <td contenteditable="true" onblur="updateField(${r.id}, 'tanggal', this.textContent)">${r.tanggal}<br><small style="font-size:9px;">${uniqueCode}</small></td>
-                                        <td contenteditable="true" onblur="updateField(${r.id}, 'aktivitas', this.textContent)">${r.aktivitas}</td>
-                                        <td contenteditable="true" onblur="updateField(${r.id}, 'mulai', this.textContent); updateTotalJamField(${r.id})">${r.mulai}</td>
-                                        <td contenteditable="true" onblur="updateField(${r.id}, 'selesai', this.textContent); updateTotalJamField(${r.id})">${r.selesai}</td>
+                                        <td contenteditable="true" onblur="updateField(${r.id}, 'aktivitas', this.textContent)">${r.aktivitas || ''}</td>
+                                        <td contenteditable="true" onblur="updateField(${r.id}, 'mulai', this.textContent); updateTotalJamField(${r.id})">${r.mulai || '-'}</td>
+                                        <td contenteditable="true" onblur="updateField(${r.id}, 'selesai', this.textContent); updateTotalJamField(${r.id})">${r.selesai || '-'}</td>
                                         <td class="number-cell">${r.totalJam} jam</td>
                                         <td>
                                             <select onchange="updateField(${r.id}, 'status', this.value)" 
@@ -1274,6 +1267,7 @@
                                                 <option value="Progress" ${r.status === 'Progress' ? 'selected' : ''}>Progress</option>
                                                 <option value="Done" ${r.status === 'Done' ? 'selected' : ''}>Done</option>
                                             </select>
+                                        </select>
                                         </td>
                                         <td contenteditable="true" onblur="updateField(${r.id}, 'catatan', this.textContent)">${r.catatan || ''}</td>
                                         <td>${r.synced ? '✅ Tersync' : (isEligibleForQR(r) ? '📱 Siap Sync' : '⏳ Belum')}</td>
@@ -1284,7 +1278,7 @@
                                     </tr>
                                 `;
                             }).join('')}
-                            ${filteredReports.length === 0 ? '<tr><td colspan="9" style="text-align:center;">Belum ada data. Klik "Tambah Baris" untuk memulai</td>' : ''}
+                            ${filteredReports.length === 0 ? '<tr><td colspan="9" style="text-align:center; padding: 30px;">📋 Belum ada data. Klik "Tambah Baris Baru" untuk memulai</td></tr>' : ''}
                         </tbody>
                     </table>
                 </div>
@@ -1344,7 +1338,7 @@
             
             syncQueue.unshift({
                 id: report.id,
-                uniqueCode: getDailyUniqueCode(report.operatorName, report.tanggal, report.divisi),
+                uniqueCode: getDailyUniqueCode(report.operatorName, report.tanggal, report.divisi, report.id),
                 operator: report.operator,
                 operatorName: report.operatorName,
                 divisi: report.divisi,
@@ -1355,19 +1349,22 @@
             });
             
             saveToLocal();
-            alert(`✅ Laporan tanggal ${report.tanggal} telah ditandai sync!`);
+            alert(`✅ Laporan "${report.aktivitas}" tanggal ${report.tanggal} telah ditandai sync!`);
             renderOperatorPanel();
         }
     };
     
+    // Fungsi untuk menambah baris baru - BISA BANYAK DALAM 1 HARI
     window.addRowOperator = function() {
+        const today = getTodayDate();
+        
         const newId = reports.length > 0 ? Math.max(...reports.map(r => r.id)) + 1 : 1;
         const newRow = {
             id: newId,
             operator: currentUser.username,
             operatorName: currentUser.name,
             divisi: currentUser.divisi,
-            tanggal: getTodayDate(),
+            tanggal: today,
             aktivitas: '',
             mulai: '',
             selesai: '',
@@ -1379,7 +1376,23 @@
         };
         reports.push(newRow);
         saveToLocal();
+        
+        // Hapus filter jika ada agar baris baru terlihat
+        if (currentDateFilter) {
+            currentDateFilter = '';
+        }
+        
         renderOperatorPanel();
+        
+        // Scroll ke baris baru
+        setTimeout(() => {
+            const rows = document.querySelectorAll('.spreadsheet-table tbody tr');
+            if (rows.length > 0) {
+                rows[rows.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 100);
+        
+        alert(`✅ Baris baru telah ditambahkan untuk tanggal ${today}!\n\nSilakan isi aktivitas, jam mulai, dan jam selesai.\n\nAnda dapat menambah banyak baris untuk tanggal yang sama.`);
     };
     
     window.clearRow = function(rowId) {
@@ -1471,14 +1484,14 @@
                                     </thead>
                                     <tbody>
                                         ${opReports.map(r => {
-                                            const uniqueCode = getDailyUniqueCode(r.operatorName, r.tanggal, r.divisi);
+                                            const uniqueCode = getDailyUniqueCode(r.operatorName, r.tanggal, r.divisi, r.id);
                                             return `
                                                 <tr>
                                                     <td>${r.tanggal}</td>
                                                     <td><small>${uniqueCode}</small></td>
-                                                    <td>${r.aktivitas}</td>
-                                                    <td>${r.mulai}</td>
-                                                    <td>${r.selesai}</td>
+                                                    <td>${r.aktivitas || '-'}</td>
+                                                    <td>${r.mulai || '-'}</td>
+                                                    <td>${r.selesai || '-'}</td>
                                                     <td class="number-cell">${r.totalJam} jam</td>
                                                     <td>
                                                         <span class="status-badge ${r.status === 'Done' ? 'status-done' : r.status === 'Progress' ? 'status-progress' : 'status-pending'}">
@@ -1490,7 +1503,7 @@
                                                 </tr>
                                             `;
                                         }).join('')}
-                                        ${opReports.length === 0 ? '<tr><td colspan="9" style="text-align:center;">Belum ada data laporan</td>' : ''}
+                                        ${opReports.length === 0 ? '<tr><td colspan="9" style="text-align:center;">Belum ada data laporan</td></tr>' : ''}
                                     </tbody>
                                 </table>
                             </div>
@@ -1560,7 +1573,6 @@
         await stopScanner();
         currentUser = null;
         currentDateFilter = '';
-        lastDate = '';
         document.getElementById('appContainer').style.display = 'none';
         document.getElementById('loginPanel').style.display = 'flex';
         document.getElementById('loginUsername').value = '';
