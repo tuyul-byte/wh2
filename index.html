@@ -851,11 +851,11 @@
         return totalJam >= 8.0 && !report.synced;
     }
     
-    // Generate data QR
+    // Generate data QR - DIPERBAIKI
     function generateQRData(report) {
         const uniqueCode = getDailyUniqueCode(report.operatorName, report.tanggal, report.divisi, report.id);
         
-        return JSON.stringify({
+        const qrDataObj = {
             type: 'DAILY_REPORT_SYNC',
             version: '1.0',
             uniqueCode: uniqueCode,
@@ -864,11 +864,17 @@
             operatorName: report.operatorName,
             divisi: report.divisi,
             tanggal: report.tanggal,
-            aktivitas: report.aktivitas.substring(0, 50),
+            aktivitas: report.aktivitas,
             totalJam: report.totalJam,
             status: report.status,
             timestamp: new Date().toISOString()
-        });
+        };
+        
+        console.log("=== GENERATE QR CODE ===");
+        console.log("ID Laporan:", report.id);
+        console.log("Data QR:", qrDataObj);
+        
+        return JSON.stringify(qrDataObj);
     }
     
     // Fungsi membuat QR Code
@@ -1065,15 +1071,24 @@
     function handleScanResult(decodedText) {
         const scanResultDiv = document.getElementById('scanResult');
         
+        console.log("=== SCAN QR CODE ===");
+        console.log("Hasil Scan:", decodedText);
+        
         try {
             const data = JSON.parse(decodedText);
+            console.log("Data hasil scan:", data);
             
             if (data.type === 'DAILY_REPORT_SYNC') {
                 let report = null;
+                let searchMethod = "";
                 
                 // STRATEGI 1: Cari berdasarkan ID (Paling akurat)
                 if (data.id) {
                     report = reports.find(r => r.id === data.id);
+                    if (report) {
+                        searchMethod = "ID";
+                        console.log("✅ Ditemukan berdasarkan ID:", report.id);
+                    }
                 }
                 
                 // STRATEGI 2: Cari berdasarkan uniqueCode
@@ -1082,6 +1097,10 @@
                         const uniqueCode = getDailyUniqueCode(r.operatorName, r.tanggal, r.divisi, r.id);
                         return uniqueCode === data.uniqueCode;
                     });
+                    if (report) {
+                        searchMethod = "UniqueCode";
+                        console.log("✅ Ditemukan berdasarkan UniqueCode:", report.id);
+                    }
                 }
                 
                 // STRATEGI 3: Cari berdasarkan operatorName + tanggal + aktivitas
@@ -1089,22 +1108,27 @@
                     report = reports.find(r => 
                         r.operatorName === data.operatorName && 
                         r.tanggal === data.tanggal &&
-                        r.aktivitas === data.aktivitas &&
-                        !r.synced
+                        r.aktivitas === data.aktivitas
                     );
+                    if (report) {
+                        searchMethod = "OperatorName+Tanggal+Aktivitas";
+                        console.log("✅ Ditemukan:", report.id);
+                    }
                 }
                 
                 // STRATEGI 4: Cari berdasarkan operator + tanggal
                 if (!report && data.operator && data.tanggal) {
                     const candidates = reports.filter(r => 
                         r.operator === data.operator && 
-                        r.tanggal === data.tanggal &&
-                        !r.synced
+                        r.tanggal === data.tanggal
                     );
+                    console.log(`Kandidat Operator+Tanggal: ${candidates.length}`);
                     if (candidates.length === 1) {
                         report = candidates[0];
+                        searchMethod = "Operator+Tanggal (1)";
                     } else if (candidates.length > 1) {
-                        report = candidates.find(r => parseFloat(r.totalJam) >= 8.0);
+                        report = candidates.find(r => parseFloat(r.totalJam) >= 8.0 && !r.synced);
+                        if (report) searchMethod = "Operator+Tanggal (filter)";
                     }
                 }
                 
@@ -1112,22 +1136,26 @@
                 if (!report && data.operatorName && data.tanggal) {
                     const candidates = reports.filter(r => 
                         r.operatorName === data.operatorName && 
-                        r.tanggal === data.tanggal &&
-                        !r.synced
+                        r.tanggal === data.tanggal
                     );
+                    console.log(`Kandidat OperatorName+Tanggal: ${candidates.length}`);
                     if (candidates.length === 1) {
                         report = candidates[0];
+                        searchMethod = "OperatorName+Tanggal (1)";
                     } else if (candidates.length > 1) {
-                        report = candidates.find(r => parseFloat(r.totalJam) >= 8.0);
+                        report = candidates.find(r => parseFloat(r.totalJam) >= 8.0 && !r.synced);
+                        if (report) searchMethod = "OperatorName+Tanggal (filter)";
                     }
                 }
                 
                 if (report) {
+                    console.log("=== LAPORAN DITEMUKAN ===");
+                    console.log("Metode:", searchMethod);
+                    console.log("ID:", report.id, "Jam:", report.totalJam, "Synced:", report.synced);
+                    
                     if (report.synced) {
-                        if (scanResultDiv) {
-                            scanResultDiv.innerHTML = `⚠️ Laporan dari ${report.operatorName} tanggal ${report.tanggal} sudah pernah di-sync!`;
-                            scanResultDiv.className = "scan-result error";
-                        }
+                        scanResultDiv.innerHTML = `⚠️ Laporan dari ${report.operatorName} tanggal ${report.tanggal} sudah pernah di-sync!`;
+                        scanResultDiv.className = "scan-result error";
                         setTimeout(() => autoStopScannerAfterSync(`⚠️ Laporan sudah pernah di-sync`), 2000);
                     } else if (parseFloat(report.totalJam) >= 8.0) {
                         report.synced = true;
@@ -1146,46 +1174,36 @@
                         });
                         
                         saveToLocal();
-                        
-                        if (scanResultDiv) {
-                            scanResultDiv.innerHTML = `✅ BERHASIL! Laporan ${report.operatorName} - ${report.tanggal}\n"${report.aktivitas.substring(0,40)}"\nTotal jam: ${report.totalJam} jam\nKamera akan mati otomatis...`;
-                            scanResultDiv.className = "scan-result success";
-                        }
+                        scanResultDiv.innerHTML = `✅ BERHASIL! ${report.operatorName} - ${report.tanggal}\n"${report.aktivitas.substring(0,40)}"\nTotal jam: ${report.totalJam} jam`;
+                        scanResultDiv.className = "scan-result success";
                         
                         if (currentUser && currentUser.role === 'admin') {
-                            setTimeout(() => {
-                                renderAdminPanel();
-                            }, 1500);
+                            setTimeout(() => renderAdminPanel(), 1500);
                         }
-                        
                         autoStopScannerAfterSync(`✅ Sync berhasil!`);
                     } else {
-                        if (scanResultDiv) {
-                            scanResultDiv.innerHTML = `❌ GAGAL! Laporan ${report.operatorName} - ${report.tanggal}\nTotal jam: ${report.totalJam} jam (minimal 8 jam)`;
-                            scanResultDiv.className = "scan-result error";
-                        }
+                        scanResultDiv.innerHTML = `❌ GAGAL! Total jam: ${report.totalJam} jam (minimal 8 jam)`;
+                        scanResultDiv.className = "scan-result error";
                         setTimeout(() => autoStopScannerAfterSync(`❌ Total jam ${report.totalJam} (<8 jam)`), 2000);
                     }
                 } else {
-                    if (scanResultDiv) {
-                        scanResultDiv.innerHTML = `❌ Kode QR tidak valid! Laporan tidak ditemukan.\n\nPastikan laporan sudah diisi dan total jam ≥ 8 jam.`;
-                        scanResultDiv.className = "scan-result error";
-                    }
-                    setTimeout(() => autoStopScannerAfterSync(`❌ Laporan tidak ditemukan`), 3000);
+                    console.log("=== LAPORAN TIDAK DITEMUKAN ===");
+                    console.log("Data dicari:", {id:data.id, uniqueCode:data.uniqueCode, operator:data.operator, tanggal:data.tanggal});
+                    console.log("Total laporan tersedia:", reports.length);
+                    
+                    scanResultDiv.innerHTML = `❌ Kode QR tidak valid! Laporan tidak ditemukan.\n\nOperator: ${data.operatorName || data.operator || '?'}\nTanggal: ${data.tanggal || '?'}\nAktivitas: ${(data.aktivitas || '?').substring(0,30)}\n\nPastikan laporan sudah diisi dan total jam ≥ 8 jam.`;
+                    scanResultDiv.className = "scan-result error";
+                    setTimeout(() => autoStopScannerAfterSync(`❌ Laporan tidak ditemukan`), 4000);
                 }
             } else {
-                if (scanResultDiv) {
-                    scanResultDiv.innerHTML = `❌ QR Code tidak valid! Bukan laporan daily report.`;
-                    scanResultDiv.className = "scan-result error";
-                }
+                scanResultDiv.innerHTML = `❌ QR Code tidak valid! Bukan laporan daily report.`;
+                scanResultDiv.className = "scan-result error";
                 setTimeout(() => autoStopScannerAfterSync(`❌ QR tidak valid`), 2000);
             }
         } catch (e) {
-            console.error("Error parsing QR:", e);
-            if (scanResultDiv) {
-                scanResultDiv.innerHTML = `❌ QR Code tidak dapat dibaca! Format tidak sesuai.`;
-                scanResultDiv.className = "scan-result error";
-            }
+            console.error("Error:", e);
+            scanResultDiv.innerHTML = `❌ QR Code tidak dapat dibaca! Format tidak sesuai.`;
+            scanResultDiv.className = "scan-result error";
             setTimeout(() => autoStopScannerAfterSync(`❌ Format QR salah`), 2000);
         }
         
