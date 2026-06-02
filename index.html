@@ -5,545 +5,545 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Daily Report System - QR Code Sync</title>
     <style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-/* Splash Screen */
-.splash-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    transition: opacity 0.5s ease;
-}
-
-.splash-content {
-    text-align: center;
-    color: white;
-}
-
-.splash-logo {
-    font-size: 64px;
-    margin-bottom: 20px;
-    animation: bounce 1s ease infinite;
-}
-
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-20px); }
-}
-
-.progress-bar {
-    width: 250px;
-    height: 4px;
-    background: rgba(255,255,255,0.3);
-    border-radius: 10px;
-    margin: 30px auto 0;
-    overflow: hidden;
-}
-
-.progress-fill {
-    width: 0%;
-    height: 100%;
-    background: white;
-    border-radius: 10px;
-    transition: width 0.3s ease;
-}
-
-/* Login Panel */
-.login-container {
-    display: none;
-    min-height: 100vh;
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-}
-
-.login-card {
-    background: white;
-    border-radius: 20px;
-    padding: 40px;
-    width: 100%;
-    max-width: 450px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    animation: slideUp 0.5s ease;
-}
-
-@keyframes slideUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.login-header {
-    text-align: center;
-    margin-bottom: 15px;
-}
-
-.login-header h2 {
-    font-size: 28px;
-    color: #1e3c72;
-    margin-bottom: 8px;
-}
-
-.login-header p {
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 5px;
-}
-
-.login-header.with-spacing {
-    margin-bottom: 30px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #e0e0e0;
-}
-
-.divider {
-    height: 1px;
-    background: linear-gradient(90deg, transparent, #ccc, transparent);
-    margin: 25px 0 20px 0;
-}
-
-.role-selector {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 30px;
-}
-
-.role-btn {
-    flex: 1;
-    padding: 12px;
-    border: 2px solid #e0e0e0;
-    background: white;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.3s;
-    font-weight: 600;
-}
-
-.role-btn.active {
-    border-color: #2a5298;
-    background: #2a5298;
-    color: white;
-}
-
-.input-group {
-    margin-bottom: 25px;
-}
-
-.input-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 500;
-    color: #333;
-}
-
-.input-group input, .input-group select {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid #e0e0e0;
-    border-radius: 10px;
-    font-size: 14px;
-    transition: 0.3s;
-}
-
-.input-group input:focus, .input-group select:focus {
-    outline: none;
-    border-color: #2a5298;
-}
-
-.login-btn {
-    width: 100%;
-    padding: 14px;
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 10px;
-    transition: transform 0.2s;
-}
-
-.login-btn:hover {
-    transform: translateY(-2px);
-}
-
-.error-msg {
-    color: #e74c3c;
-    font-size: 12px;
-    margin-top: 15px;
-    text-align: center;
-}
-
-.info-login {
-    margin-top: 25px;
-    font-size: 12px;
-    text-align: center;
-    color: #999;
-    border-top: 1px solid #eee;
-    padding-top: 20px;
-}
-
-.info-login p {
-    margin: 5px 0;
-}
-
-/* Main App */
-.app-container {
-    display: none;
-}
-
-.navbar {
-    background: #1e3c72;
-    color: white;
-    padding: 15px 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 15px;
-}
-
-.user-info {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.user-badge {
-    background: #3498db;
-    padding: 6px 15px;
-    border-radius: 20px;
-    font-size: 14px;
-}
-
-.logout-btn {
-    background: #e74c3c;
-    border: none;
-    padding: 6px 15px;
-    border-radius: 20px;
-    color: white;
-    cursor: pointer;
-}
-
-.main-content {
-    padding: 20px;
-    background: #f0f2f5;
-    min-height: calc(100vh - 70px);
-}
-
-/* QR Code Styles */
-.qr-container {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-.qr-title {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 10px;
-    color: #1e3c72;
-}
-
-.qr-status {
-    padding: 10px;
-    border-radius: 8px;
-    margin: 15px 0;
-    font-weight: bold;
-}
-
-.qr-status.success {
-    background: #d4edda;
-    color: #155724;
-}
-
-.qr-status.warning {
-    background: #fff3cd;
-    color: #856404;
-}
-
-.qr-status.error {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-.qr-code {
-    padding: 20px;
-    background: white;
-    display: inline-block;
-    border-radius: 10px;
-}
-
-.qr-code img {
-    display: block;
-    margin: 0 auto;
-}
-
-.sync-btn {
-    background: #27ae60;
-    color: white;
-    border: none;
-    padding: 12px 30px;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 15px;
-}
-
-/* Scanner Styles */
-.scanner-container {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-.scanner-buttons {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-}
-
-.camera-btn {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.camera-btn.start {
-    background: #27ae60;
-    color: white;
-}
-
-.camera-btn.stop {
-    background: #e74c3c;
-    color: white;
-}
-
-.camera-btn:disabled {
-    background: #95a5a6;
-    cursor: not-allowed;
-}
-
-.video-container {
-    position: relative;
-    width: 100%;
-    max-width: 500px;
-    margin: 0 auto;
-    border-radius: 10px;
-    overflow: hidden;
-    background: #000;
-}
-
-#preview {
-    width: 100%;
-    height: auto;
-    background: #000;
-}
-
-.scan-result {
-    margin-top: 15px;
-    padding: 12px;
-    border-radius: 8px;
-    text-align: center;
-}
-
-.scan-result.success {
-    background: #d4edda;
-    color: #155724;
-}
-
-.scan-result.error {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-.scan-result.info {
-    background: #cce5ff;
-    color: #004085;
-}
-
-.scan-result.warning {
-    background: #fff3cd;
-    color: #856404;
-}
-
-/* Spreadsheet Styles */
-.spreadsheet-card {
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-.spreadsheet-toolbar {
-    padding: 12px 20px;
-    background: #f8f9fa;
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    align-items: center;
-    border-bottom: 1px solid #ddd;
-}
-
-.toolbar-btn {
-    background: #3498db;
-    color: white;
-    border: none;
-    padding: 6px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-.toolbar-btn.excel {
-    background: #27ae60;
-}
-
-.toolbar-btn.reset {
-    background: #e74c3c;
-}
-
-.toolbar-btn.sync-reset {
-    background: #e67e22;
-}
-
-.toolbar-btn.history-reset {
-    background: #3498db;
-}
-
-.spreadsheet-wrapper {
-    overflow-x: auto;
-}
-
-.spreadsheet-table {
-    border-collapse: collapse;
-    min-width: 100%;
-    font-size: 13px;
-}
-
-.spreadsheet-table th, .spreadsheet-table td {
-    border: 1px solid #ddd;
-    padding: 10px 8px;
-    vertical-align: middle;
-}
-
-.spreadsheet-table th {
-    background: #f8f9fa;
-    font-weight: 600;
-    text-align: center;
-}
-
-.number-cell {
-    text-align: right;
-    font-family: monospace;
-}
-
-.status-badge {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: bold;
-}
-
-.status-done { background: #d4edda; color: #155724; }
-.status-progress { background: #fff3cd; color: #856404; }
-.status-pending { background: #f8d7da; color: #721c24; }
-
-.tabs-container {
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    margin-top: 20px;
-}
-
-.tabs-header {
-    display: flex;
-    background: #34495e;
-    overflow-x: auto;
-    gap: 2px;
-}
-
-.tab-btn {
-    padding: 12px 24px;
-    background: #2c3e50;
-    border: none;
-    color: white;
-    cursor: pointer;
-    font-weight: 600;
-    white-space: nowrap;
-}
-
-.tab-btn.active {
-    background: #3498db;
-}
-
-.tab-content {
-    display: none;
-    padding: 20px;
-}
-
-.tab-content.active {
-    display: block;
-}
-
-.search-container {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    margin-left: auto;
-}
-
-.search-input {
-    padding: 6px 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 12px;
-    width: 150px;
-}
-
-.reset-info {
-    font-size: 12px;
-    color: #666;
-    margin-top: 10px;
-    padding: 10px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    text-align: left;
-}
-
-.btn-group {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-bottom: 10px;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Splash Screen */
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .splash-content {
+            text-align: center;
+            color: white;
+        }
+
+        .splash-logo {
+            font-size: 64px;
+            margin-bottom: 20px;
+            animation: bounce 1s ease infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .progress-bar {
+            width: 250px;
+            height: 4px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+            margin: 30px auto 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: white;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        /* Login Panel */
+        .login-container {
+            display: none;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .login-header h2 {
+            font-size: 28px;
+            color: #1e3c72;
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .login-header.with-spacing {
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #ccc, transparent);
+            margin: 25px 0 20px 0;
+        }
+
+        .role-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .role-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .role-btn.active {
+            border-color: #2a5298;
+            background: #2a5298;
+            color: white;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #2a5298;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .error-msg {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .info-login {
+            margin-top: 25px;
+            font-size: 12px;
+            text-align: center;
+            color: #999;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        .info-login p {
+            margin: 5px 0;
+        }
+
+        /* Main App */
+        .app-container {
+            display: none;
+        }
+
+        .navbar {
+            background: #1e3c72;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-badge {
+            background: #3498db;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            background: #e74c3c;
+            border: none;
+            padding: 6px 15px;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .main-content {
+            padding: 20px;
+            background: #f0f2f5;
+            min-height: calc(100vh - 70px);
+        }
+
+        /* QR Code Styles */
+        .qr-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .qr-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #1e3c72;
+        }
+
+        .qr-status {
+            padding: 10px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+
+        .qr-status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .qr-status.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .qr-status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .qr-code {
+            padding: 20px;
+            background: white;
+            display: inline-block;
+            border-radius: 10px;
+        }
+
+        .qr-code img {
+            display: block;
+            margin: 0 auto;
+        }
+
+        .sync-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        /* Scanner Styles */
+        .scanner-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .scanner-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .camera-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .camera-btn.start {
+            background: #27ae60;
+            color: white;
+        }
+
+        .camera-btn.stop {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .camera-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #000;
+        }
+
+        #preview {
+            width: 100%;
+            height: auto;
+            background: #000;
+        }
+
+        .scan-result {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .scan-result.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .scan-result.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .scan-result.info {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .scan-result.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        /* Spreadsheet Styles */
+        .spreadsheet-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .spreadsheet-toolbar {
+            padding: 12px 20px;
+            background: #f8f9fa;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .toolbar-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .toolbar-btn.excel {
+            background: #27ae60;
+        }
+
+        .toolbar-btn.reset {
+            background: #e74c3c;
+        }
+
+        .toolbar-btn.sync-reset {
+            background: #e67e22;
+        }
+
+        .toolbar-btn.history-reset {
+            background: #3498db;
+        }
+
+        .spreadsheet-wrapper {
+            overflow-x: auto;
+        }
+
+        .spreadsheet-table {
+            border-collapse: collapse;
+            min-width: 100%;
+            font-size: 13px;
+        }
+
+        .spreadsheet-table th, .spreadsheet-table td {
+            border: 1px solid #ddd;
+            padding: 10px 8px;
+            vertical-align: middle;
+        }
+
+        .spreadsheet-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .number-cell {
+            text-align: right;
+            font-family: monospace;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .status-done { background: #d4edda; color: #155724; }
+        .status-progress { background: #fff3cd; color: #856404; }
+        .status-pending { background: #f8d7da; color: #721c24; }
+
+        .tabs-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .tabs-header {
+            display: flex;
+            background: #34495e;
+            overflow-x: auto;
+            gap: 2px;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: #2c3e50;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            background: #3498db;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        .search-input {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 12px;
+            width: 150px;
+        }
+
+        .reset-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: left;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
     </style>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
@@ -637,27 +637,26 @@
     
     // Load data dari localStorage
     function loadFromLocal() {
-        const saved = localStorage.getItem('daily_report_qr_system');
+        const saved = localStorage.getItem('daily_report_qr_system_v2');
         if (saved) {
             const data = JSON.parse(saved);
             reports = data.reports || [];
             syncQueue = data.syncQueue || [];
         } else {
-            // Data contoh untuk testing
             reports = [];
             syncQueue = [];
         }
     }
     
     function saveToLocal() {
-        localStorage.setItem('daily_report_qr_system', JSON.stringify({ reports, syncQueue }));
+        localStorage.setItem('daily_report_qr_system_v2', JSON.stringify({ reports, syncQueue }));
     }
     
     // Reset semua data (hanya admin)
     function resetAllData() {
         if (currentUser && currentUser.role === 'admin') {
             if (confirm('⚠️ Hapus SEMUA data? Data tidak dapat dikembalikan!')) {
-                localStorage.removeItem('daily_report_qr_system');
+                localStorage.removeItem('daily_report_qr_system_v2');
                 reports = [];
                 syncQueue = [];
                 saveToLocal();
@@ -720,18 +719,12 @@
         return parseFloat(report.totalJam) >= 8.0 && !report.synced;
     }
     
-    // GENERATE QR CODE - SEDERHANA hanya dengan ID
+    // GENERATE QR CODE - HANYA BERISI ID
     function generateQRData(report) {
-        const qrData = {
-            type: 'DAILY_REPORT_SYNC',
-            id: report.id,
-            operatorName: report.operatorName,
-            tanggal: report.tanggal,
-            totalJam: report.totalJam,
-            timestamp: Date.now()
-        };
-        console.log("Generate QR untuk ID:", report.id);
-        return JSON.stringify(qrData);
+        // QR Code hanya berisi ID laporan (sederhana)
+        const qrText = `REPORT_${report.id}`;
+        console.log("Generate QR untuk ID:", report.id, "Text:", qrText);
+        return qrText;
     }
     
     function generateQRCode(element, text, size = 200) {
@@ -789,7 +782,9 @@
     
     // ==================== SCANNER ====================
     async function startScanner() {
-        if (html5QrCode && isScanning) { await stopScanner(); }
+        if (html5QrCode && isScanning) { 
+            await stopScanner();
+        }
         try {
             html5QrCode = new Html5Qrcode("preview");
             await html5QrCode.start(
@@ -811,88 +806,85 @@
     
     async function stopScanner() {
         if (html5QrCode && isScanning) {
-            try { await html5QrCode.stop(); html5QrCode.clear(); } catch(e) {}
+            try { 
+                await html5QrCode.stop(); 
+                html5QrCode.clear(); 
+            } catch(e) { console.log("Stop error:", e); }
             isScanning = false;
         }
         document.getElementById('btnStartScan').disabled = false;
         document.getElementById('btnStopScan').disabled = true;
-        document.getElementById('scanResult').innerHTML = "⏹️ Scanner dihentikan";
+        document.getElementById('scanResult').innerHTML = "⏹️ Scanner dihentikan. Klik Start Scanner untuk memulai lagi.";
         document.getElementById('scanResult').className = "scan-result warning";
         document.getElementById('preview').innerHTML = '';
         html5QrCode = null;
     }
     
-    // HANDLE SCAN RESULT - FOKUS PADA ID
+    // HANDLE SCAN RESULT - SEDERHANA
     function handleScanResult(decodedText) {
         const resultDiv = document.getElementById('scanResult');
-        console.log("Scan result:", decodedText);
+        console.log("Hasil scan:", decodedText);
         
-        try {
-            const data = JSON.parse(decodedText);
-            console.log("Parsed data:", data);
+        // Ekstrak ID dari format REPORT_123
+        let reportId = null;
+        if (decodedText.startsWith('REPORT_')) {
+            reportId = parseInt(decodedText.replace('REPORT_', ''));
+        } else {
+            // Coba parse langsung sebagai angka
+            reportId = parseInt(decodedText);
+        }
+        
+        console.log("Report ID:", reportId);
+        
+        if (reportId && !isNaN(reportId)) {
+            // Cari laporan berdasarkan ID
+            const report = reports.find(r => r.id === reportId);
             
-            if (data.type === 'DAILY_REPORT_SYNC') {
-                // CARI BERDASARKAN ID
-                let report = reports.find(r => r.id === data.id);
+            if (report) {
+                console.log("Laporan ditemukan:", report);
                 
-                if (!report && data.id) {
-                    // Coba konversi ke number
-                    report = reports.find(r => r.id === parseInt(data.id));
-                }
-                
-                if (report) {
-                    console.log("Laporan ditemukan:", report);
+                if (report.synced) {
+                    resultDiv.innerHTML = `⚠️ Laporan ID:${report.id} - ${report.operatorName} tgl ${report.tanggal} SUDAH pernah di-sync!`;
+                    resultDiv.className = "scan-result error";
+                } else if (parseFloat(report.totalJam) >= 8.0) {
+                    // SYNC BERHASIL
+                    report.synced = true;
+                    report.syncDate = new Date().toISOString();
                     
-                    if (report.synced) {
-                        resultDiv.innerHTML = `⚠️ Laporan ${report.operatorName} tgl ${report.tanggal} SUDAH pernah di-sync!`;
-                        resultDiv.className = "scan-result error";
-                        setTimeout(() => stopScanner(), 2000);
-                    } else if (parseFloat(report.totalJam) >= 8.0) {
-                        // SYNC BERHASIL
-                        report.synced = true;
-                        report.syncDate = new Date().toISOString();
-                        
-                        syncQueue.unshift({
-                            id: report.id,
-                            operatorName: report.operatorName,
-                            divisi: report.divisi,
-                            tanggal: report.tanggal,
-                            aktivitas: report.aktivitas,
-                            totalJam: report.totalJam,
-                            syncDate: report.syncDate
-                        });
-                        
-                        saveToLocal();
-                        resultDiv.innerHTML = `✅ BERHASIL! ${report.operatorName} - ${report.tanggal}\nTotal ${report.totalJam} jam - TERSYNC!`;
-                        resultDiv.className = "scan-result success";
-                        
-                        if (currentUser?.role === 'admin') {
-                            setTimeout(() => renderAdminPanel(), 1500);
-                        }
-                        setTimeout(() => stopScanner(), 2000);
-                    } else {
-                        resultDiv.innerHTML = `❌ GAGAL! Total jam ${report.totalJam} jam (minimal 8 jam)`;
-                        resultDiv.className = "scan-result error";
-                        setTimeout(() => stopScanner(), 2000);
+                    syncQueue.unshift({
+                        id: report.id,
+                        operatorName: report.operatorName,
+                        divisi: report.divisi,
+                        tanggal: report.tanggal,
+                        aktivitas: report.aktivitas,
+                        totalJam: report.totalJam,
+                        syncDate: report.syncDate
+                    });
+                    
+                    saveToLocal();
+                    resultDiv.innerHTML = `✅ BERHASIL! Laporan ID:${report.id} - ${report.operatorName} tgl ${report.tanggal}\n"${report.aktivitas}" - ${report.totalJam} jam - TERSYNC!`;
+                    resultDiv.className = "scan-result success";
+                    
+                    // Refresh admin panel jika perlu
+                    if (currentUser?.role === 'admin') {
+                        setTimeout(() => renderAdminPanel(), 500);
                     }
                 } else {
-                    console.log("Laporan TIDAK ditemukan. Data yang discan:", data);
-                    console.log("Daftar laporan yang ada:", reports.map(r => ({id: r.id, operator: r.operatorName, tanggal: r.tanggal, jam: r.totalJam, synced: r.synced})));
-                    resultDiv.innerHTML = `❌ Kode QR tidak valid! Laporan ID ${data.id} tidak ditemukan.\nPastikan laporan sudah dibuat dan total jam ≥ 8 jam.`;
+                    resultDiv.innerHTML = `❌ GAGAL! Laporan ID:${report.id} - Total jam ${report.totalJam} jam (minimal 8 jam)`;
                     resultDiv.className = "scan-result error";
-                    setTimeout(() => stopScanner(), 3000);
                 }
             } else {
-                resultDiv.innerHTML = `❌ Bukan QR Code laporan daily report`;
+                console.log("Laporan tidak ditemukan. ID:", reportId);
+                console.log("Daftar laporan yang ada:", reports.map(r => ({id: r.id, operator: r.operatorName, tanggal: r.tanggal, jam: r.totalJam})));
+                resultDiv.innerHTML = `❌ Laporan dengan ID ${reportId} tidak ditemukan!\nPastikan laporan sudah dibuat dan total jam ≥ 8 jam.`;
                 resultDiv.className = "scan-result error";
-                setTimeout(() => stopScanner(), 2000);
             }
-        } catch(e) {
-            console.error("Error:", e);
-            resultDiv.innerHTML = `❌ QR Code tidak terbaca: ${e.message}`;
+        } else {
+            resultDiv.innerHTML = `❌ Format QR tidak dikenal: "${decodedText}"\nQR harus format "REPORT_[angka]"`;
             resultDiv.className = "scan-result error";
-            setTimeout(() => stopScanner(), 2000);
         }
+        
+        // Scanner TIDAK otomatis mati - user harus klik stop manual
     }
     
     // ==================== OPERATOR PANEL ====================
@@ -914,7 +906,7 @@
             eligibleReports.forEach(report => {
                 qrHtml += `
                     <div class="qr-container">
-                        <div class="qr-title">📱 QR Code Sync - ${report.tanggal}</div>
+                        <div class="qr-title">📱 QR Code Sync - ID:${report.id} - ${report.tanggal}</div>
                         <div class="qr-status success">
                             ✅ ${report.aktivitas} (${report.totalJam} jam)
                         </div>
@@ -924,7 +916,7 @@
                 `;
             });
         } else {
-            qrHtml = `<div class="qr-container"><div class="qr-status warning">⚠️ Belum ada aktivitas dengan total jam ≥ 8 jam</div></div>`;
+            qrHtml = `<div class="qr-container"><div class="qr-status warning">⚠️ Belum ada aktivitas dengan total jam ≥ 8 jam.<br>Isi jam mulai (contoh: 08:00) dan selesai (contoh: 16:00) lalu pilih status Done.</div></div>`;
         }
         
         if (syncedReports.length > 0) {
@@ -950,10 +942,11 @@
                 </div>
                 <div class="spreadsheet-wrapper">
                     <table class="spreadsheet-table">
-                        <thead><tr><th>Tanggal</th><th>Aktivitas</th><th>Mulai</th><th>Selesai</th><th>Total Jam</th><th>Status</th><th>Catatan</th><th>Sync</th><th>Aksi</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Tanggal</th><th>Aktivitas</th><th>Mulai</th><th>Selesai</th><th>Total Jam</th><th>Status</th><th>Catatan</th><th>Sync</th><th>Aksi</th></tr></thead>
                         <tbody>
                             ${filteredReports.map(r => `
                                 <tr>
+                                    <td>${r.id}</td>
                                     <td contenteditable="true" onblur="updateField(${r.id}, 'tanggal', this.textContent)">${r.tanggal}</td>
                                     <td contenteditable="true" onblur="updateField(${r.id}, 'aktivitas', this.textContent)">${r.aktivitas || '(kosong)'}</td>
                                     <td contenteditable="true" onblur="updateField(${r.id}, 'mulai', this.textContent); updateTotalJam(${r.id})">${r.mulai || '-'}</td>
@@ -970,10 +963,10 @@
                                     <td>${r.synced ? '✅ Tersync' : (isEligibleForQR(r) ? '📱 Siap Sync' : '⏳ Belum')}</td>
                                     <td>
                                         <button onclick="deleteRow(${r.id})" style="background:#e74c3c; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">❌ Hapus</button>
-                                    </td>
+                                     </td>
                                 </tr>
                             `).join('')}
-                            ${filteredReports.length === 0 ? '<tr><td colspan="9" style="text-align:center;">Belum ada data. Klik "Tambah Baris"</td></tr>' : ''}
+                            ${filteredReports.length === 0 ? '<tr><td colspan="10" style="text-align:center;">Belum ada data. Klik "Tambah Baris"</td>' : ''}
                         </tbody>
                     </table>
                 </div>
@@ -1043,7 +1036,7 @@
         });
         saveToLocal();
         renderOperatorPanel();
-        alert(`✅ Baris baru untuk ${getTodayDate()} ditambahkan`);
+        alert(`✅ Baris baru ID:${newId} untuk ${getTodayDate()} ditambahkan`);
     };
     
     window.deleteRow = function(id) {
@@ -1064,7 +1057,7 @@
                     <button class="camera-btn stop" id="btnStopScan" onclick="stopScanner()" disabled>⏹️ Stop Scanner</button>
                 </div>
                 <div class="video-container"><div id="preview"></div></div>
-                <div class="scan-result info" id="scanResult">🔍 Klik Start Scanner</div>
+                <div class="scan-result info" id="scanResult">🔍 Klik Start Scanner, arahkan ke QR Code, scan akan muncul di sini</div>
             </div>
             
             <div class="qr-container">
@@ -1081,7 +1074,7 @@
             <div class="qr-container">
                 <div class="qr-title">📋 Riwayat Sync (${syncQueue.length})</div>
                 ${syncQueue.length === 0 ? '<div class="qr-status info">Belum ada sync</div>' : syncQueue.map(s => `
-                    <div class="qr-status success">✅ ${s.tanggal} - ${s.operatorName} - "${s.aktivitas.substring(0,40)}" - ${s.totalJam} jam<br><small>${new Date(s.syncDate).toLocaleString('id')}</small></div>
+                    <div class="qr-status success">✅ ID:${s.id} - ${s.tanggal} - ${s.operatorName} - "${s.aktivitas.substring(0,40)}" - ${s.totalJam} jam<br><small>${new Date(s.syncDate).toLocaleString('id')}</small></div>
                 `).join('')}
             </div>
             
@@ -1097,18 +1090,19 @@
                             <div style="text-align:right; margin-bottom:10px;"><button class="toolbar-btn excel" onclick="exportOperatorToExcel('${op.username}')">📎 Export ${op.name}</button></div>
                             <div class="spreadsheet-wrapper">
                                 <table class="spreadsheet-table">
-                                    <thead><tr><th>Tanggal</th><th>Aktivitas</th><th>Mulai</th><th>Selesai</th><th>Total Jam</th><th>Status</th><th>Catatan</th><th>Sync</th></tr></thead>
+                                    <thead><tr><th>ID</th><th>Tanggal</th><th>Aktivitas</th><th>Mulai</th><th>Selesai</th><th>Total Jam</th><th>Status</th><th>Catatan</th><th>Sync</th></tr></thead>
                                     <tbody>
                                         ${opReports.map(r => `
                                             <tr>
-                                                <td>${r.tanggal}</td><td>${r.aktivitas||'-'}</td><td>${r.mulai||'-'}</td><td>${r.selesai||'-'}</td>
+                                                <td>${r.id}</td>     <td>${r.tanggal}</td>     <td>${r.aktivitas||'-'}</td>
+                                                <td>${r.mulai||'-'}</td>    <td>${r.selesai||'-'}</td>
                                                 <td class="number-cell">${r.totalJam} jam</td>
                                                 <td><span class="status-badge ${r.status==='Done'?'status-done':r.status==='Progress'?'status-progress':'status-pending'}">${r.status}</span></td>
                                                 <td>${r.catatan||'-'}</td>
                                                 <td>${r.synced ? '✅ Tersync' : (parseFloat(r.totalJam)>=8 ? '📱 Siap Sync' : '⏳ Belum')}</td>
                                             </tr>
                                         `).join('')}
-                                        ${opReports.length===0 ? '<tr><td colspan="8">Belum ada data</td></tr>' : ''}
+                                        ${opReports.length===0 ? '<tr><td colspan="9">Belum ada数据</td>' : ''}
                                     </tbody>
                                 </table>
                             </div>
