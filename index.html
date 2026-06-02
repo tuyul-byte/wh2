@@ -990,7 +990,7 @@
         
         data.reports.forEach(r => {
             emailBody += `📅 Tanggal: ${r.tanggal}\n`;
-            emailBody += `📝 Aktivitas: ${r.aktivias || '-'}\n`;
+            emailBody += `📝 Aktivitas: ${r.aktivitas || '-'}\n`;
             emailBody += `⏰ Jam: ${r.mulai || '-'} - ${r.selesai || '-'}\n`;
             emailBody += `⏱️ Total: ${r.totalJam} jam\n`;
             emailBody += `📊 Status: ${r.status}\n`;
@@ -1025,7 +1025,7 @@
         }
     }
     
-    // Generate QR Transfer
+    // Generate QR Transfer (DIPERBAIKI - menggunakan API quickchart.io)
     function generateTransferQR() {
         const data = getExportData();
         const dataStr = JSON.stringify(data);
@@ -1047,13 +1047,15 @@
         
         document.body.insertAdjacentHTML('beforeend', modalHtml);
         
-        // Generate QR Code
+        // Generate QR Code menggunakan API quickchart.io (sama seperti QR sync)
         const qrContainer = document.getElementById("transferQRCode");
-        new QRCode(qrContainer, {
-            text: qrText,
-            width: 200,
-            height: 200
-        });
+        const img = document.createElement('img');
+        img.src = `https://quickchart.io/qr?text=${encodeURIComponent(qrText)}&size=200&margin=2`;
+        img.style.width = '200px';
+        img.style.height = '200px';
+        img.style.display = 'block';
+        img.style.margin = '0 auto';
+        qrContainer.appendChild(img);
     }
     
     function closeTransferModal() {
@@ -1069,7 +1071,7 @@
                     <h3>📥 Import Data</h3>
                     <p>Pilih metode import data dari operator:</p>
                     
-                    <div class="import-area" onclick="importFromClipboard()">
+                    <div class="import-area" onclick="showPasteArea()">
                         📋 <strong>Paste dari Clipboard</strong><br>
                         <small>Tempel kode yang sudah disalin dari operator</small>
                     </div>
@@ -1094,17 +1096,17 @@
         document.body.insertAdjacentHTML('beforeend', modalHtml);
     }
     
-    function closeImportModal() {
-        const modal = document.getElementById('importModal');
-        if (modal) modal.remove();
-    }
-    
-    function importFromClipboard() {
+    function showPasteArea() {
         const textareaArea = document.getElementById('importTextAreaArea');
         if (textareaArea) {
             textareaArea.style.display = 'block';
             document.getElementById('importPasteData').focus();
         }
+    }
+    
+    function closeImportModal() {
+        const modal = document.getElementById('importModal');
+        if (modal) modal.remove();
     }
     
     async function processPastedData() {
@@ -1558,6 +1560,7 @@
                                                 <option value="Progress" ${r.status === 'Progress' ? 'selected' : ''}>Progress</option>
                                                 <option value="Done" ${r.status === 'Done' ? 'selected' : ''}>Done</option>
                                             </select>
+                                        </select>
                                         </td>
                                         <td contenteditable="true" onblur="updateField(${r.id}, 'catatan', this.textContent)">${r.catatan || ''}</td>
                                         <td>${r.synced ? '✅ Tersync' : (isEligibleForQR(r) ? '📱 Siap Sync' : '⏳ Belum')}</td>
@@ -1929,7 +1932,7 @@
     window.closeTransferScanModal = closeTransferScanModal;
     window.showImportModal = showImportModal;
     window.closeImportModal = closeImportModal;
-    window.importFromClipboard = importFromClipboard;
+    window.showPasteArea = showPasteArea;
     window.processPastedData = processPastedData;
     window.processImportData = processImportData;
 </script>
