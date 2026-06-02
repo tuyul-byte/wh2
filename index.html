@@ -293,6 +293,11 @@
             display: inline-block;
             border-radius: 10px;
         }
+        
+        .qr-code img {
+            display: block;
+            margin: 0 auto;
+        }
 
         .sync-btn {
             background: #27ae60;
@@ -575,7 +580,6 @@
 }
     </style>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
@@ -725,6 +729,21 @@
             totalJam: report.totalJam,
             timestamp: new Date().toISOString()
         });
+    }
+    
+    // Fungsi membuat QR Code menggunakan API eksternal
+    function generateQRCode(element, text, size = 200) {
+        if (!element) return;
+        element.innerHTML = '';
+        const img = document.createElement('img');
+        // Gunakan API quickchart.io (gratis dan reliable)
+        img.src = `https://quickchart.io/qr?text=${encodeURIComponent(text)}&size=${size}&margin=2`;
+        img.style.width = `${size}px`;
+        img.style.height = `${size}px`;
+        img.style.display = 'block';
+        img.style.margin = '0 auto';
+        img.alt = 'QR Code';
+        element.appendChild(img);
     }
     
     // ==================== EXPORT XLSX ====================
@@ -1055,16 +1074,14 @@
         
         document.getElementById('mainContent').innerHTML = qrHtml + tableHtml;
         
+        // Generate QR Code untuk setiap laporan yang memenuhi syarat
         setTimeout(() => {
             eligibleReports.forEach(report => {
                 const qrId = `qr_${report.id}`;
                 const element = document.getElementById(qrId);
-                if (element && !element.hasChildNodes()) {
-                    new QRCode(element, {
-                        text: generateQRData(report),
-                        width: 200,
-                        height: 200
-                    });
+                if (element) {
+                    const qrData = generateQRData(report);
+                    generateQRCode(element, qrData, 200);
                 }
             });
         }, 100);
@@ -1138,9 +1155,9 @@
             aktivitas: '',
             mulai: '',
             selesai: '',
-            status: '',
+            status: 'Pending',
             catatan: '',
-            totalJam: '',
+            totalJam: '0.0',
             synced: false,
             createdAt: new Date().toISOString()
         };
