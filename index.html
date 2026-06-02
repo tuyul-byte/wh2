@@ -7,7 +7,7 @@
     <style>
 /* Mengubah ukuran judul Riwayat Sync */
 .qr-container .qr-title {
-    font-size: 16px;  /* ganti sesuai keinginan */
+    font-size: 16px;
 }
         * {
             margin: 0;
@@ -525,8 +525,8 @@
 /* Tambahan untuk 7 kolom - perkecil lebar per kolom */
 .spreadsheet-table th,
 .spreadsheet-table td {
-    min-width: 70px;  /* ubah dari 100px */
-    padding: 4px 6px; /* sedikit lebih rapat */
+    min-width: 70px;
+    padding: 4px 6px;
 }
 
 /* Kolom 1: No/Checkbox */
@@ -594,7 +594,7 @@
     <div class="login-card">
         <div class="login-header with-spacing">
             <h2>Daily Report System</h2>
-            <p>Warehouse</p></p>
+            <p>Warehouse</p>
             <p style="font-size: 16px; color: #888;">PT. TRPC Manufacturing Indonesia</p>
         </div>
         
@@ -664,20 +664,34 @@
     let isScanning = false;
     let scanActive = false;
     
+    // Hapus data lama jika ada
+    function clearOldData() {
+        const saved = localStorage.getItem('daily_report_qr_system');
+        if (saved) {
+            const data = JSON.parse(saved);
+            if (data.reports && data.reports.length > 0) {
+                if (confirm('Data contoh ditemukan. Hapus semua data lama?')) {
+                    localStorage.removeItem('daily_report_qr_system');
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     // Load data
     function loadFromLocal() {
+        // Hapus data lama terlebih dahulu
+        clearOldData();
+        
         const saved = localStorage.getItem('daily_report_qr_system');
         if (saved) {
             const data = JSON.parse(saved);
             reports = data.reports || [];
             syncQueue = data.syncQueue || [];
         } else {
-            reports = [
-                { id: 1, operator: 'darma', operatorName: 'Darma', divisi: 'Raw Material', tanggal: '2026-05-27', aktivitas: 'Penerimaan material baku', mulai: '08:00', selesai: '16:30', status: 'Done', catatan: 'Material dari supplier A', totalJam: '8.5', synced: false, qrGenerated: false, createdAt: new Date().toISOString() },
-                { id: 2, operator: 'nurhadi', operatorName: 'Nurhadi', divisi: 'Raw Material', tanggal: '2026-05-27', aktivitas: 'Sortir material', mulai: '08:00', selesai: '16:00', status: 'Done', catatan: 'Selesai sortir', totalJam: '8.0', synced: false, qrGenerated: false, createdAt: new Date().toISOString() },
-                { id: 3, operator: 'athar', operatorName: 'Athar', divisi: 'Finish Goods', tanggal: '2026-05-27', aktivitas: 'Pengepakan produk', mulai: '09:00', selesai: '11:30', status: 'Progress', catatan: '500 unit', totalJam: '2.5', synced: false, qrGenerated: false, createdAt: new Date().toISOString() },
-                { id: 4, operator: 'purnomo', operatorName: 'Purnomo', divisi: 'Save Material', tanggal: '2026-05-27', aktivitas: 'Penyimpanan material', mulai: '08:00', selesai: '10:00', status: 'Pending', catatan: 'Gudang C', totalJam: '2.0', synced: false, qrGenerated: false, createdAt: new Date().toISOString() }
-            ];
+            reports = [];
+            syncQueue = [];
         }
     }
     
@@ -730,11 +744,15 @@
             'Sync Date': r.syncDate ? new Date(r.syncDate).toLocaleString('id') : '-'
         }));
         
+        if (exportData.length === 0) {
+            alert('Belum ada data laporan!');
+            return;
+        }
+        
         const ws = XLSX.utils.json_to_sheet(exportData);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Daily Report');
         
-        // Auto width columns
         const colWidths = [
             {wch:6}, {wch:12}, {wch:15}, {wch:15}, {wch:40}, 
             {wch:10}, {wch:10}, {wch:10}, {wch:10}, {wch:30}, {wch:10}, {wch:20}
@@ -748,6 +766,11 @@
         const operatorData = operators.find(op => op.username === operatorUsername);
         const opReports = reports.filter(r => r.operator === operatorUsername);
         
+        if (opReports.length === 0) {
+            alert(`Tidak ada data untuk ${operatorData?.name || operatorUsername}`);
+            return;
+        }
+        
         const exportData = opReports.map(r => ({
             'ID': r.id,
             'Tanggal': r.tanggal,
@@ -759,11 +782,6 @@
             'Catatan': r.catatan || '',
             'Sync Status': r.synced ? 'Tersync' : 'Belum'
         }));
-        
-        if (exportData.length === 0) {
-            alert(`Tidak ada data untuk ${operatorData?.name || operatorUsername}`);
-            return;
-        }
         
         const ws = XLSX.utils.json_to_sheet(exportData);
         const wb = XLSX.utils.book_new();
@@ -998,8 +1016,8 @@
                 <div class="spreadsheet-wrapper">
                     <table class="spreadsheet-table">
                         <thead>
-    <tr><th>Tanggal</th><th>Aktivitas</th><th>Mulai</th><th>Selesai</th><th>Total Jam</th><th>Status</th><th>Catatan</th><th>Sync</th><th>Aksi</th></tr>
-</thead>
+                            <tr><th>Tanggal</th><th>Aktivitas</th><th>Mulai</th><th>Selesai</th><th>Total Jam</th><th>Status</th><th>Catatan</th><th>Sync</th><th>Aksi</th></tr>
+                        </thead>
                         <tbody>
                             ${userReports.map(r => `
                                 <tr>
@@ -1008,27 +1026,27 @@
                                     <td contenteditable="true" onblur="updateField(${r.id}, 'mulai', this.textContent); updateTotalJamField(${r.id})">${r.mulai}</td>
                                     <td contenteditable="true" onblur="updateField(${r.id}, 'selesai', this.textContent); updateTotalJamField(${r.id})">${r.selesai}</td>
                                     <td class="number-cell">${r.totalJam} jam</td>
-                                   <td>
-    <select onchange="updateField(${r.id}, 'status', this.value); checkQREligibility(${r.id})" 
-            style="padding: 4px 8px; border-radius: 4px; border: 1px solid #ddd;
-                   ${r.status === 'Done' ? 'background: #d4edda; color: #155724;' : 
-                     r.status === 'Progress' ? 'background: #fff3cd; color: #856404;' : 
-                     'background: #f8d7da; color: #721c24;'}">
-        <option value="Pending" ${r.status === 'Pending' ? 'selected' : ''}>Pending</option>
-        <option value="Progress" ${r.status === 'Progress' ? 'selected' : ''}>Progress</option>
-        <option value="Done" ${r.status === 'Done' ? 'selected' : ''}>Done</option>
-    </select>
-</td>
+                                    <td>
+                                        <select onchange="updateField(${r.id}, 'status', this.value); checkQREligibility(${r.id})" 
+                                                style="padding: 4px 8px; border-radius: 4px; border: 1px solid #ddd;
+                                                       ${r.status === 'Done' ? 'background: #d4edda; color: #155724;' : 
+                                                         r.status === 'Progress' ? 'background: #fff3cd; color: #856404;' : 
+                                                         'background: #f8d7da; color: #721c24;'}">
+                                            <option value="Pending" ${r.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                                            <option value="Progress" ${r.status === 'Progress' ? 'selected' : ''}>Progress</option>
+                                            <option value="Done" ${r.status === 'Done' ? 'selected' : ''}>Done</option>
                                         </select>
+                                    </select>
                                     </td>
                                     <td contenteditable="true" onblur="updateField(${r.id}, 'catatan', this.textContent)">${r.catatan || ''}</td>
-                                        <td>${r.synced ? '✅ Tersync' : (isEligibleForQR(r) ? '📱 Siap Sync' : '⏳ Belum')}</td>
-    <td style="white-space: nowrap;">
-        <button onclick="clearRow(${r.id})" style="background:#e67e22; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; margin-right:4px; font-size:11px;">🗑️ Kosongkan</button>
-        <button onclick="deleteRow(${r.id})" style="background:#e74c3c; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">❌ Hapus</button>
-    </td>
-</tr>
+                                    <td>${r.synced ? '✅ Tersync' : (isEligibleForQR(r) ? '📱 Siap Sync' : '⏳ Belum')}</td>
+                                    <td style="white-space: nowrap;">
+                                        <button onclick="clearRow(${r.id})" style="background:#e67e22; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; margin-right:4px; font-size:11px;">🗑️ Kosongkan</button>
+                                        <button onclick="deleteRow(${r.id})" style="background:#e74c3c; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">❌ Hapus</button>
+                                    </td>
+                                </tr>
                             `).join('')}
+                            ${userReports.length === 0 ? '<tr><td colspan="9" style="text-align:center;">Belum ada data. Klik "Tambah Baris" untuk memulai</td>' : ''}
                         </tbody>
                     </table>
                 </div>
@@ -1110,19 +1128,19 @@
             operator: currentUser.username,
             operatorName: currentUser.name,
             divisi: currentUser.divisi,
- tanggal: (() => {
-    const d = new Date();
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    return `${day}/${month}/${year}`; // DD/MM/YYYY
-})(),
-            aktivitas: 'Aktivitas baru',
-            mulai: '08:00',
-            selesai: '17:00',
-            status: 'Pending',
+            tanggal: (() => {
+                const d = new Date();
+                const day = String(d.getDate()).padStart(2, '0');
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const year = d.getFullYear();
+                return `${day}/${month}/${year}`;
+            })(),
+            aktivitas: '',
+            mulai: '',
+            selesai: '',
+            status: '',
             catatan: '',
-            totalJam: '9.0',
+            totalJam: '',
             synced: false,
             createdAt: new Date().toISOString()
         };
@@ -1130,40 +1148,39 @@
         saveToLocal();
         renderOperatorPanel();
     };
-// ==================== FUNGSI HAPUS UNTUK OPERATOR ====================
-
-window.clearRow = function(rowId) {
-    const report = reports.find(r => r.id === rowId);
-    if (report && confirm(`Kosongkan semua kolom pada baris ini?`)) {
-        report.aktivitas = '';
-        report.mulai = '';
-        report.selesai = '';
-        report.catatan = '';
-        report.totalJam = '0.0';
-        report.status = 'Pending';
-        saveToLocal();
-        renderOperatorPanel();
-        alert('Isi baris telah dikosongkan');
-    }
-};
-
-window.deleteRow = function(rowId) {
-    if (confirm(`Yakin ingin menghapus baris ini secara permanen?`)) {
-        reports = reports.filter(r => r.id !== rowId);
-        saveToLocal();
-        renderOperatorPanel();
-        alert('Baris telah dihapus');
-    }
-};
-
-window.clearAllRows = function() {
-    if (confirm('PERINGATAN: Ini akan menghapus SEMUA data laporan Anda! Lanjutkan?')) {
-        reports = reports.filter(r => r.operator !== currentUser.username);
-        saveToLocal();
-        renderOperatorPanel();
-        alert('Semua baris Anda telah dihapus');
-    }
-};
+    
+    window.clearRow = function(rowId) {
+        const report = reports.find(r => r.id === rowId);
+        if (report && confirm(`Kosongkan semua kolom pada baris ini?`)) {
+            report.aktivitas = '';
+            report.mulai = '';
+            report.selesai = '';
+            report.catatan = '';
+            report.totalJam = '0.0';
+            report.status = 'Pending';
+            saveToLocal();
+            renderOperatorPanel();
+            alert('Isi baris telah dikosongkan');
+        }
+    };
+    
+    window.deleteRow = function(rowId) {
+        if (confirm(`Yakin ingin menghapus baris ini secara permanen?`)) {
+            reports = reports.filter(r => r.id !== rowId);
+            saveToLocal();
+            renderOperatorPanel();
+            alert('Baris telah dihapus');
+        }
+    };
+    
+    window.clearAllRows = function() {
+        if (confirm('PERINGATAN: Ini akan menghapus SEMUA data laporan Anda! Lanjutkan?')) {
+            reports = reports.filter(r => r.operator !== currentUser.username);
+            saveToLocal();
+            renderOperatorPanel();
+            alert('Semua baris Anda telah dihapus');
+        }
+    };
     
     // ==================== ADMIN PANEL ====================
     function renderAdminPanel() {
@@ -1221,15 +1238,16 @@ window.clearAllRows = function() {
                                                 <td>${r.mulai}</td>
                                                 <td>${r.selesai}</td>
                                                 <td class="number-cell">${r.totalJam} jam</td>
-<td>
-    <span class="status-badge ${r.status === 'Done' ? 'status-done' : r.status === 'Progress' ? 'status-progress' : 'status-pending'}">
-        ${r.status}
-    </span>
-</td>
+                                                <td>
+                                                    <span class="status-badge ${r.status === 'Done' ? 'status-done' : r.status === 'Progress' ? 'status-progress' : 'status-pending'}">
+                                                        ${r.status}
+                                                    </span>
+                                                </td>
                                                 <td>${r.catatan || '-'}</td>
                                                 <td>${r.synced ? '<span style="color:green;">✅ Tersync</span>' : (parseFloat(r.totalJam) >= 8 && r.status === 'Done' ? '📱 Siap Sync' : '⏳ Belum')}</td>
                                             </tr>
                                         `).join('')}
+                                        ${opReports.length === 0 ? '<tr><td colspan="8" style="text-align:center;">Belum ada data laporan</td></tr>' : ''}
                                     </tbody>
                                 </table>
                             </div>
