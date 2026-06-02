@@ -5,656 +5,545 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Daily Report System - QR Code Sync</title>
     <style>
-/* Mengubah ukuran judul Riwayat Sync */
-.qr-container .qr-title {
-    font-size: 16px;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        /* Splash Screen */
-        .splash-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: opacity 0.5s ease;
-        }
-
-        .splash-content {
-            text-align: center;
-            color: white;
-        }
-
-        .splash-logo {
-            font-size: 64px;
-            margin-bottom: 20px;
-            animation: bounce 1s ease infinite;
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
-        }
-
-        .progress-bar {
-            width: 250px;
-            height: 4px;
-            background: rgba(255,255,255,0.3);
-            border-radius: 10px;
-            margin: 30px auto 0;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            width: 0%;
-            height: 100%;
-            background: white;
-            border-radius: 10px;
-            transition: width 0.3s ease;
-        }
-
-        /* Login Panel */
-        .login-container {
-            display: none;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .login-card {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            width: 100%;
-            max-width: 450px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            animation: slideUp 0.5s ease;
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .login-header {
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        .login-header h2 {
-            font-size: 28px;
-            color: #1e3c72;
-            margin-bottom: 8px;
-        }
-
-        .login-header p {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 5px;
-        }
-
-        .login-header.with-spacing {
-            margin-bottom: 30px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-
-        .divider {
-            height: 1px;
-            background: linear-gradient(90deg, transparent, #ccc, transparent);
-            margin: 25px 0 20px 0;
-        }
-
-        .role-selector {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .role-btn {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            background: white;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 600;
-        }
-
-        .role-btn.active {
-            border-color: #2a5298;
-            background: #2a5298;
-            color: white;
-        }
-
-        .input-group {
-            margin-bottom: 25px;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #333;
-        }
-
-        .input-group input, .input-group select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 14px;
-            transition: 0.3s;
-        }
-
-        .input-group input:focus, .input-group select:focus {
-            outline: none;
-            border-color: #2a5298;
-        }
-
-        .login-btn {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: transform 0.2s;
-        }
-
-        .login-btn:hover {
-            transform: translateY(-2px);
-        }
-
-        .error-msg {
-            color: #e74c3c;
-            font-size: 12px;
-            margin-top: 15px;
-            text-align: center;
-        }
-
-        .info-login {
-            margin-top: 25px;
-            font-size: 12px;
-            text-align: center;
-            color: #999;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
-        }
-
-        .info-login p {
-            margin: 5px 0;
-        }
-
-        /* Main App */
-        .app-container {
-            display: none;
-        }
-
-        .navbar {
-            background: #1e3c72;
-            color: white;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .user-badge {
-            background: #3498db;
-            padding: 6px 15px;
-            border-radius: 20px;
-            font-size: 14px;
-        }
-
-        .logout-btn {
-            background: #e74c3c;
-            border: none;
-            padding: 6px 15px;
-            border-radius: 20px;
-            color: white;
-            cursor: pointer;
-        }
-
-        .main-content {
-            padding: 20px;
-            background: #f0f2f5;
-            min-height: calc(100vh - 70px);
-        }
-
-        /* QR Code Styles */
-        .qr-container {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .qr-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #1e3c72;
-        }
-
-        .qr-status {
-            padding: 10px;
-            border-radius: 8px;
-            margin: 15px 0;
-            font-weight: bold;
-        }
-
-        .qr-status.success {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .qr-status.warning {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .qr-status.error {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .qr-code {
-            padding: 20px;
-            background: white;
-            display: inline-block;
-            border-radius: 10px;
-        }
-        
-        .qr-code img {
-            display: block;
-            margin: 0 auto;
-        }
-
-        .sync-btn {
-            background: #27ae60;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-
-        .sync-btn:disabled {
-            background: #95a5a6;
-            cursor: not-allowed;
-        }
-
-        /* Scanner Styles */
-        .scanner-container {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .scanner-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .camera-btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .camera-btn.start {
-            background: #27ae60;
-            color: white;
-        }
-
-        .camera-btn.start:hover {
-            background: #219a52;
-        }
-
-        .camera-btn.stop {
-            background: #e74c3c;
-            color: white;
-        }
-
-        .camera-btn.stop:hover {
-            background: #c0392b;
-        }
-
-        .camera-btn:disabled {
-            background: #95a5a6;
-            cursor: not-allowed;
-        }
-
-        .video-container {
-            position: relative;
-            width: 100%;
-            max-width: 500px;
-            margin: 0 auto;
-            border-radius: 10px;
-            overflow: hidden;
-            background: #000;
-        }
-
-        #preview {
-            width: 100%;
-            height: auto;
-            background: #000;
-        }
-
-        .scan-result {
-            margin-top: 15px;
-            padding: 12px;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        .scan-result.success {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .scan-result.error {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .scan-result.info {
-            background: #cce5ff;
-            color: #004085;
-        }
-
-        .scan-result.warning {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        /* Spreadsheet Styles */
-        .spreadsheet-card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .spreadsheet-toolbar {
-            padding: 12px 20px;
-            background: #f8f9fa;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .toolbar-btn {
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .toolbar-btn.excel {
-            background: #27ae60;
-        }
-
-        .toolbar-btn.excel:hover {
-            background: #219a52;
-        }
-
-        .toolbar-btn.reset {
-            background: #e74c3c;
-        }
-
-        .toolbar-btn.reset:hover {
-            background: #c0392b;
-        }
-
-        .toolbar-btn.sync-reset {
-            background: #e67e22;
-        }
-
-        .toolbar-btn.sync-reset:hover {
-            background: #d35400;
-        }
-
-        .toolbar-btn.history-reset {
-            background: #3498db;
-        }
-
-        .toolbar-btn.history-reset:hover {
-            background: #2980b9;
-        }
-
-        .spreadsheet-wrapper {
-            overflow-x: auto;
-        }
-
-        .spreadsheet-table {
-            border-collapse: collapse;
-            min-width: 100%;
-            font-size: 13px;
-        }
-
-        .spreadsheet-table th, .spreadsheet-table td {
-            border: 1px solid #ddd;
-            padding: 12px 8px;
-            min-width: 100px;
-            vertical-align: middle;
-        }
-
-        .spreadsheet-table th {
-            background: #f8f9fa;
-            font-weight: 600;
-            text-align: center;
-            padding: 14px 8px;
-        }
-
-        .spreadsheet-table td {
-            padding: 10px 8px;
-        }
-
-        .number-cell {
-            text-align: right;
-            font-family: monospace;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: bold;
-        }
-
-        .status-done { background: #d4edda; color: #155724; }
-        .status-progress { background: #fff3cd; color: #856404; }
-        .status-pending { background: #f8d7da; color: #721c24; }
-
-        .tabs-container {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            margin-top: 20px;
-        }
-
-        .tabs-header {
-            display: flex;
-            background: #34495e;
-            overflow-x: auto;
-            gap: 2px;
-        }
-
-        .tab-btn {
-            padding: 12px 24px;
-            background: #2c3e50;
-            border: none;
-            color: white;
-            cursor: pointer;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-        .tab-btn.active {
-            background: #3498db;
-        }
-
-        .tab-content {
-            display: none;
-            padding: 20px;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .export-buttons {
-            display: flex;
-            gap: 10px;
-            margin-left: auto;
-        }
-
-        .search-container {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-left: auto;
-        }
-
-        .search-input {
-            padding: 6px 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 12px;
-            width: 150px;
-        }
-
-        /* Tambahan untuk 7 kolom - perkecil lebar per kolom */
-        .spreadsheet-table th,
-        .spreadsheet-table td {
-            min-width: 70px;
-            padding: 4px 6px;
-        }
-
-        /* Kolom 1: No/Checkbox */
-        .spreadsheet-table th:nth-child(1),
-        .spreadsheet-table td:nth-child(1) {
-            min-width: 70px;
-            text-align: center;
-        }
-
-        /* Kolom 2: Kode/ID */
-        .spreadsheet-table th:nth-child(2),
-        .spreadsheet-table td:nth-child(2) {
-            min-width: 120px;
-        }
-
-        /* Kolom 3: Nama Produk (lebar sedang) */
-        .spreadsheet-table th:nth-child(3),
-        .spreadsheet-table td:nth-child(3) {
-            min-width: 40px;
-        }
-
-        /* Kolom 4: Kategori */
-        .spreadsheet-table th:nth-child(4),
-        .spreadsheet-table td:nth-child(4) {
-            min-width: 40px;
-        }
-
-        /* Kolom 5: Harga */
-        .spreadsheet-table th:nth-child(5),
-        .spreadsheet-table td:nth-child(5) {
-            min-width: 75px;
-        }
-
-        /* Kolom 6: Stok */
-        .spreadsheet-table th:nth-child(6),
-        .spreadsheet-table td:nth-child(6) {
-            min-width: 70px;
-            text-align: center;
-        }
-
-        /* Kolom 7: Status */
-        .spreadsheet-table th:nth-child(7),
-        .spreadsheet-table td:nth-child(7) {
-            min-width: 100px;
-            text-align: center;
-        }
-        
-        .reset-info {
-            font-size: 12px;
-            color: #666;
-            margin-top: 10px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            text-align: left;
-        }
-        
-        .reset-info strong {
-            color: #2c3e50;
-        }
-        
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 10px;
-        }
-
-        .badge-date {
-            display: inline-block;
-            background: #1e3c72;
-            color: white;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 10px;
-            margin-left: 5px;
-        }
+
+/* Splash Screen */
+.splash-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease;
+}
+
+.splash-content {
+    text-align: center;
+    color: white;
+}
+
+.splash-logo {
+    font-size: 64px;
+    margin-bottom: 20px;
+    animation: bounce 1s ease infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+.progress-bar {
+    width: 250px;
+    height: 4px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 10px;
+    margin: 30px auto 0;
+    overflow: hidden;
+}
+
+.progress-fill {
+    width: 0%;
+    height: 100%;
+    background: white;
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+/* Login Panel */
+.login-container {
+    display: none;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.login-card {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    width: 100%;
+    max-width: 450px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: slideUp 0.5s ease;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.login-header h2 {
+    font-size: 28px;
+    color: #1e3c72;
+    margin-bottom: 8px;
+}
+
+.login-header p {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.login-header.with-spacing {
+    margin-bottom: 30px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #ccc, transparent);
+    margin: 25px 0 20px 0;
+}
+
+.role-selector {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.role-btn {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    background: white;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 600;
+}
+
+.role-btn.active {
+    border-color: #2a5298;
+    background: #2a5298;
+    color: white;
+}
+
+.input-group {
+    margin-bottom: 25px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+}
+
+.input-group input, .input-group select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.input-group input:focus, .input-group select:focus {
+    outline: none;
+    border-color: #2a5298;
+}
+
+.login-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: transform 0.2s;
+}
+
+.login-btn:hover {
+    transform: translateY(-2px);
+}
+
+.error-msg {
+    color: #e74c3c;
+    font-size: 12px;
+    margin-top: 15px;
+    text-align: center;
+}
+
+.info-login {
+    margin-top: 25px;
+    font-size: 12px;
+    text-align: center;
+    color: #999;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+.info-login p {
+    margin: 5px 0;
+}
+
+/* Main App */
+.app-container {
+    display: none;
+}
+
+.navbar {
+    background: #1e3c72;
+    color: white;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.user-badge {
+    background: #3498db;
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+}
+
+.logout-btn {
+    background: #e74c3c;
+    border: none;
+    padding: 6px 15px;
+    border-radius: 20px;
+    color: white;
+    cursor: pointer;
+}
+
+.main-content {
+    padding: 20px;
+    background: #f0f2f5;
+    min-height: calc(100vh - 70px);
+}
+
+/* QR Code Styles */
+.qr-container {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.qr-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #1e3c72;
+}
+
+.qr-status {
+    padding: 10px;
+    border-radius: 8px;
+    margin: 15px 0;
+    font-weight: bold;
+}
+
+.qr-status.success {
+    background: #d4edda;
+    color: #155724;
+}
+
+.qr-status.warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.qr-status.error {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.qr-code {
+    padding: 20px;
+    background: white;
+    display: inline-block;
+    border-radius: 10px;
+}
+
+.qr-code img {
+    display: block;
+    margin: 0 auto;
+}
+
+.sync-btn {
+    background: #27ae60;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+/* Scanner Styles */
+.scanner-container {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.scanner-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.camera-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.camera-btn.start {
+    background: #27ae60;
+    color: white;
+}
+
+.camera-btn.stop {
+    background: #e74c3c;
+    color: white;
+}
+
+.camera-btn:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+}
+
+.video-container {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #000;
+}
+
+#preview {
+    width: 100%;
+    height: auto;
+    background: #000;
+}
+
+.scan-result {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.scan-result.success {
+    background: #d4edda;
+    color: #155724;
+}
+
+.scan-result.error {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.scan-result.info {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.scan-result.warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+/* Spreadsheet Styles */
+.spreadsheet-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.spreadsheet-toolbar {
+    padding: 12px 20px;
+    background: #f8f9fa;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+}
+
+.toolbar-btn {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.toolbar-btn.excel {
+    background: #27ae60;
+}
+
+.toolbar-btn.reset {
+    background: #e74c3c;
+}
+
+.toolbar-btn.sync-reset {
+    background: #e67e22;
+}
+
+.toolbar-btn.history-reset {
+    background: #3498db;
+}
+
+.spreadsheet-wrapper {
+    overflow-x: auto;
+}
+
+.spreadsheet-table {
+    border-collapse: collapse;
+    min-width: 100%;
+    font-size: 13px;
+}
+
+.spreadsheet-table th, .spreadsheet-table td {
+    border: 1px solid #ddd;
+    padding: 10px 8px;
+    vertical-align: middle;
+}
+
+.spreadsheet-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    text-align: center;
+}
+
+.number-cell {
+    text-align: right;
+    font-family: monospace;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.status-done { background: #d4edda; color: #155724; }
+.status-progress { background: #fff3cd; color: #856404; }
+.status-pending { background: #f8d7da; color: #721c24; }
+
+.tabs-container {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 20px;
+}
+
+.tabs-header {
+    display: flex;
+    background: #34495e;
+    overflow-x: auto;
+    gap: 2px;
+}
+
+.tab-btn {
+    padding: 12px 24px;
+    background: #2c3e50;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.tab-btn.active {
+    background: #3498db;
+}
+
+.tab-content {
+    display: none;
+    padding: 20px;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.search-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-left: auto;
+}
+
+.search-input {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 12px;
+    width: 150px;
+}
+
+.reset-info {
+    font-size: 12px;
+    color: #666;
+    margin-top: 10px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    text-align: left;
+}
+
+.btn-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
     </style>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
@@ -712,6 +601,7 @@
             <p>Nurhadi (Raw Material) : <strong>rmn123</strong></p>
             <p>Athar (Finish Goods) : <strong>fg123</strong></p>
             <p>Purnomo (Save Material) : <strong>sm123</strong></p>
+            <p>Admin : <strong>leader01</strong></p>
         </div>
     </div>
 </div>
@@ -743,11 +633,9 @@
     let currentUser = null;
     let html5QrCode = null;
     let isScanning = false;
-    let scanActive = false;
-    let autoStopTimeout = null;
     let currentDateFilter = '';
     
-    // Load data
+    // Load data dari localStorage
     function loadFromLocal() {
         const saved = localStorage.getItem('daily_report_qr_system');
         if (saved) {
@@ -755,68 +643,68 @@
             reports = data.reports || [];
             syncQueue = data.syncQueue || [];
         } else {
+            // Data contoh untuk testing
             reports = [];
             syncQueue = [];
         }
     }
     
-    // Reset semua data
+    function saveToLocal() {
+        localStorage.setItem('daily_report_qr_system', JSON.stringify({ reports, syncQueue }));
+    }
+    
+    // Reset semua data (hanya admin)
     function resetAllData() {
         if (currentUser && currentUser.role === 'admin') {
-            if (confirm('⚠️ PERINGATAN: Ini akan menghapus SEMUA data laporan dan riwayat sync!\n\nSetelah reset, semua laporan akan hilang.\n\nAnda yakin ingin melanjutkan?')) {
+            if (confirm('⚠️ Hapus SEMUA data? Data tidak dapat dikembalikan!')) {
                 localStorage.removeItem('daily_report_qr_system');
                 reports = [];
                 syncQueue = [];
                 saveToLocal();
-                
-                if (currentUser.role === 'admin') {
-                    renderAdminPanel();
-                }
-                
                 alert('✅ Semua data berhasil direset!');
+                if (currentUser.role === 'admin') renderAdminPanel();
+                else renderOperatorPanel();
             }
         } else {
-            alert('Reset data hanya dapat dilakukan oleh Admin!');
+            alert('Reset data hanya untuk Admin!');
         }
     }
     
-    // Reset status sync saja (laporan bisa di-scan ulang)
+    // Reset status sync (laporan bisa di-scan ulang)
     function resetSyncStatusOnly() {
         if (currentUser && currentUser.role === 'admin') {
-            if (confirm('⚠️ PERINGATAN: Ini akan mereset status sync SEMUA laporan!\n\nLaporan yang sudah pernah di-sync akan bisa di-scan ULANG.\n\nData laporan TIDAK akan terhapus.\n\nLanjutkan?')) {
-                let resetCount = 0;
-                reports.forEach(report => {
-                    if (report.synced === true) {
-                        report.synced = false;
-                        report.syncDate = null;
-                        resetCount++;
+            if (confirm('⚠️ Reset status sync? Laporan akan bisa di-scan ULANG.')) {
+                let count = 0;
+                reports.forEach(r => {
+                    if (r.synced) {
+                        r.synced = false;
+                        r.syncDate = null;
+                        count++;
                     }
                 });
-                
                 saveToLocal();
-                
-                alert(`✅ Status sync ${resetCount} laporan telah direset!\n\nSekarang laporan tersebut bisa di-scan ulang.`);
+                alert(`✅ ${count} laporan direset status sync-nya`);
                 renderAdminPanel();
             }
         }
     }
     
-    // Reset riwayat sync saja (hapus data scan QR)
+    // Reset riwayat sync
     function resetSyncHistoryOnly() {
         if (currentUser && currentUser.role === 'admin') {
-            if (confirm('⚠️ PERINGATAN: Ini akan menghapus SEMUA riwayat scan QR (Sync Queue)!\n\nStatus sync pada laporan TIDAK akan berubah.\n\nLanjutkan?')) {
-                const historyCount = syncQueue.length;
+            if (confirm('⚠️ Hapus semua riwayat scan QR?')) {
+                const count = syncQueue.length;
                 syncQueue = [];
                 saveToLocal();
-                
-                alert(`✅ ${historyCount} riwayat sync berhasil dihapus!\n\nStatus sync laporan tidak berubah.`);
+                alert(`✅ ${count} riwayat sync dihapus`);
                 renderAdminPanel();
             }
         }
     }
     
-    function saveToLocal() {
-        localStorage.setItem('daily_report_qr_system', JSON.stringify({ reports, syncQueue }));
+    function getTodayDate() {
+        const d = new Date();
+        return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
     }
     
     function calculateTotalJam(mulai, selesai) {
@@ -828,56 +716,24 @@
         return diff > 0 ? diff.toFixed(1) : '0.0';
     }
     
-    // Fungsi untuk mendapatkan tanggal hari ini
-    function getTodayDate() {
-        const d = new Date();
-        const day = String(d.getDate()).padStart(2, '0');
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const year = d.getFullYear();
-        return `${day}/${month}/${year}`;
-    }
-    
-    // Fungsi untuk mendapatkan kode unik per operator per hari per id - KONSISTEN
-    function getDailyUniqueCode(operatorName, tanggal, divisi, id) {
-        const operatorCode = operatorName.toUpperCase().substring(0, 5);
-        const divisiCode = divisi.substring(0, 2).toUpperCase();
-        // Format: DARMA_15-01-2024_RM_123
-        return `${operatorCode}_${tanggal.replace(/\//g, '-')}_${divisiCode}_${id}`;
-    }
-    
-    // Syarat QR: total jam >= 8 jam
     function isEligibleForQR(report) {
-        const totalJam = parseFloat(report.totalJam);
-        return totalJam >= 8.0 && !report.synced;
+        return parseFloat(report.totalJam) >= 8.0 && !report.synced;
     }
     
-    // Generate data QR - DIPERBAIKI
+    // GENERATE QR CODE - SEDERHANA hanya dengan ID
     function generateQRData(report) {
-        const uniqueCode = getDailyUniqueCode(report.operatorName, report.tanggal, report.divisi, report.id);
-        
-        const qrDataObj = {
+        const qrData = {
             type: 'DAILY_REPORT_SYNC',
-            version: '1.0',
-            uniqueCode: uniqueCode,
             id: report.id,
-            operator: report.operator,
             operatorName: report.operatorName,
-            divisi: report.divisi,
             tanggal: report.tanggal,
-            aktivitas: report.aktivitas,
             totalJam: report.totalJam,
-            status: report.status,
-            timestamp: new Date().toISOString()
+            timestamp: Date.now()
         };
-        
-        console.log("=== GENERATE QR CODE ===");
-        console.log("ID Laporan:", report.id);
-        console.log("Data QR:", qrDataObj);
-        
-        return JSON.stringify(qrDataObj);
+        console.log("Generate QR untuk ID:", report.id);
+        return JSON.stringify(qrData);
     }
     
-    // Fungsi membuat QR Code
     function generateQRCode(element, text, size = 200) {
         if (!element) return;
         element.innerHTML = '';
@@ -887,284 +743,117 @@
         img.style.height = `${size}px`;
         img.style.display = 'block';
         img.style.margin = '0 auto';
-        img.alt = 'QR Code';
         element.appendChild(img);
     }
     
-    // ==================== EXPORT XLSX ====================
+    // EXPORT FUNCTIONS
     function exportAllToExcel() {
-        const exportData = reports.map(r => ({
-            'ID': r.id,
-            'Tanggal': r.tanggal,
-            'Operator': r.operatorName,
-            'Divisi': r.divisi,
-            'Unique Code': getDailyUniqueCode(r.operatorName, r.tanggal, r.divisi, r.id),
-            'Aktivitas': r.aktivitas,
-            'Jam Mulai': r.mulai,
-            'Jam Selesai': r.selesai,
-            'Total Jam': r.totalJam,
-            'Status': r.status,
-            'Catatan': r.catatan || '',
-            'Sync Status': r.synced ? 'Tersync' : 'Belum',
-            'Sync Date': r.syncDate ? new Date(r.syncDate).toLocaleString('id') : '-'
+        const data = reports.map(r => ({
+            'ID': r.id, 'Tanggal': r.tanggal, 'Operator': r.operatorName,
+            'Divisi': r.divisi, 'Aktivitas': r.aktivitas, 'Mulai': r.mulai,
+            'Selesai': r.selesai, 'Total Jam': r.totalJam, 'Status': r.status,
+            'Sync': r.synced ? 'Ya' : 'Tidak'
         }));
-        
-        if (exportData.length === 0) {
-            alert('Belum ada data laporan!');
-            return;
-        }
-        
-        const ws = XLSX.utils.json_to_sheet(exportData);
+        if (data.length === 0) { alert('Tidak ada data'); return; }
+        const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Daily Report');
-        
-        XLSX.writeFile(wb, `daily_report_all_${new Date().toISOString().split('T')[0]}.xlsx`);
+        XLSX.writeFile(wb, `daily_report_${new Date().toISOString().split('T')[0]}.xlsx`);
     }
     
     function exportOperatorToExcel(operatorUsername) {
-        const operatorData = operators.find(op => op.username === operatorUsername);
-        const opReports = reports.filter(r => r.operator === operatorUsername);
-        
-        if (opReports.length === 0) {
-            alert(`Tidak ada data untuk ${operatorData?.name || operatorUsername}`);
-            return;
-        }
-        
-        const exportData = opReports.map(r => ({
-            'ID': r.id,
-            'Tanggal': r.tanggal,
-            'Unique Code': getDailyUniqueCode(r.operatorName, r.tanggal, r.divisi, r.id),
-            'Aktivitas': r.aktivitas,
-            'Jam Mulai': r.mulai,
-            'Jam Selesai': r.selesai,
-            'Total Jam': r.totalJam,
-            'Status': r.status,
-            'Catatan': r.catatan || '',
-            'Sync Status': r.synced ? 'Tersync' : 'Belum'
+        const op = operators.find(o => o.username === operatorUsername);
+        const data = reports.filter(r => r.operator === operatorUsername).map(r => ({
+            'ID': r.id, 'Tanggal': r.tanggal, 'Aktivitas': r.aktivitas,
+            'Mulai': r.mulai, 'Selesai': r.selesai, 'Total Jam': r.totalJam,
+            'Status': r.status, 'Sync': r.synced ? 'Ya' : 'Tidak'
         }));
-        
-        const ws = XLSX.utils.json_to_sheet(exportData);
+        if (data.length === 0) { alert('Tidak ada data'); return; }
+        const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, `${operatorData?.name || operatorUsername}`);
-        
-        XLSX.writeFile(wb, `daily_report_${operatorData?.name || operatorUsername}_${new Date().toISOString().split('T')[0]}.xlsx`);
+        XLSX.utils.book_append_sheet(wb, ws, op?.name || operatorUsername);
+        XLSX.writeFile(wb, `daily_report_${operatorUsername}_${new Date().toISOString().split('T')[0]}.xlsx`);
     }
     
     function exportSyncQueueToExcel() {
-        if (syncQueue.length === 0) {
-            alert('Belum ada data sync queue!');
-            return;
-        }
-        
-        const exportData = syncQueue.map(s => ({
-            'ID': s.id,
-            'Tanggal': s.tanggal,
-            'Unique Code': s.uniqueCode,
-            'Operator': s.operatorName,
-            'Divisi': s.divisi,
-            'Aktivitas': s.aktivitas,
-            'Total Jam': s.totalJam,
-            'Sync Date': new Date(s.syncDate).toLocaleString('id')
+        if (syncQueue.length === 0) { alert('Tidak ada data sync'); return; }
+        const data = syncQueue.map(s => ({
+            'ID': s.id, 'Tanggal': s.tanggal, 'Operator': s.operatorName,
+            'Aktivitas': s.aktivitas, 'Total Jam': s.totalJam, 'Waktu Sync': new Date(s.syncDate).toLocaleString('id')
         }));
-        
-        const ws = XLSX.utils.json_to_sheet(exportData);
+        const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Sync Queue');
-        
-        XLSX.writeFile(wb, `daily_report_sync_queue_${new Date().toISOString().split('T')[0]}.xlsx`);
+        XLSX.writeFile(wb, `sync_queue_${new Date().toISOString().split('T')[0]}.xlsx`);
     }
     
-    // ==================== SCANNER FUNCTIONS ====================
+    // ==================== SCANNER ====================
     async function startScanner() {
-        if (html5QrCode && isScanning) {
-            await stopScanner();
-        }
-        
+        if (html5QrCode && isScanning) { await stopScanner(); }
         try {
             html5QrCode = new Html5Qrcode("preview");
-            
             await html5QrCode.start(
                 { facingMode: "environment" },
-                {
-                    fps: 10,
-                    qrbox: { width: 250, height: 250 }
-                },
-                (decodedText) => {
-                    handleScanResult(decodedText);
-                },
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                (decodedText) => handleScanResult(decodedText),
                 (errorMessage) => {}
             );
-            
             isScanning = true;
-            scanActive = true;
-            
-            const startBtn = document.getElementById('btnStartScan');
-            const stopBtn = document.getElementById('btnStopScan');
-            const scanResultDiv = document.getElementById('scanResult');
-            
-            if (startBtn) startBtn.disabled = true;
-            if (stopBtn) stopBtn.disabled = false;
-            if (scanResultDiv) {
-                scanResultDiv.innerHTML = "📷 Scanner aktif - siap scan QR Code";
-                scanResultDiv.className = "scan-result info";
-            }
-            
+            document.getElementById('btnStartScan').disabled = true;
+            document.getElementById('btnStopScan').disabled = false;
+            document.getElementById('scanResult').innerHTML = "📷 Scanner aktif - arahkan ke QR Code";
+            document.getElementById('scanResult').className = "scan-result info";
         } catch (err) {
-            const scanResultDiv = document.getElementById('scanResult');
-            if (scanResultDiv) {
-                scanResultDiv.innerHTML = `❌ Gagal mengakses kamera: ${err.message}`;
-                scanResultDiv.className = "scan-result error";
-            }
+            document.getElementById('scanResult').innerHTML = `❌ Gagal akses kamera: ${err.message}`;
+            document.getElementById('scanResult').className = "scan-result error";
         }
     }
     
     async function stopScanner() {
-        if (autoStopTimeout) {
-            clearTimeout(autoStopTimeout);
-            autoStopTimeout = null;
-        }
-        
         if (html5QrCode && isScanning) {
-            try {
-                await html5QrCode.stop();
-                html5QrCode.clear();
-            } catch (err) {}
+            try { await html5QrCode.stop(); html5QrCode.clear(); } catch(e) {}
             isScanning = false;
-            scanActive = false;
         }
-        
-        const startBtn = document.getElementById('btnStartScan');
-        const stopBtn = document.getElementById('btnStopScan');
-        const scanResultDiv = document.getElementById('scanResult');
-        
-        if (startBtn) startBtn.disabled = false;
-        if (stopBtn) stopBtn.disabled = true;
-        if (scanResultDiv && scanResultDiv.innerHTML !== "✅ Berhasil sync, kamera otomatis dimatikan!") {
-            scanResultDiv.innerHTML = "⏹️ Scanner dihentikan. Klik 'Start Scanner' untuk memulai.";
-            scanResultDiv.className = "scan-result warning";
-        }
-        
-        const previewDiv = document.getElementById('preview');
-        if (previewDiv) {
-            previewDiv.innerHTML = '';
-        }
-        
+        document.getElementById('btnStartScan').disabled = false;
+        document.getElementById('btnStopScan').disabled = true;
+        document.getElementById('scanResult').innerHTML = "⏹️ Scanner dihentikan";
+        document.getElementById('scanResult').className = "scan-result warning";
+        document.getElementById('preview').innerHTML = '';
         html5QrCode = null;
     }
     
-    async function autoStopScannerAfterSync(message) {
-        const scanResultDiv = document.getElementById('scanResult');
-        if (scanResultDiv) {
-            scanResultDiv.innerHTML = message;
-            scanResultDiv.className = "scan-result success";
-        }
-        
-        setTimeout(async () => {
-            if (scanResultDiv && isScanning) {
-                scanResultDiv.innerHTML = "✅ Berhasil sync, kamera otomatis dimatikan!";
-            }
-            await stopScanner();
-        }, 1500);
-    }
-    
-    // HANDLE SCAN RESULT - DIPERBAIKI
+    // HANDLE SCAN RESULT - FOKUS PADA ID
     function handleScanResult(decodedText) {
-        const scanResultDiv = document.getElementById('scanResult');
-        
-        console.log("=== SCAN QR CODE ===");
-        console.log("Hasil Scan:", decodedText);
+        const resultDiv = document.getElementById('scanResult');
+        console.log("Scan result:", decodedText);
         
         try {
             const data = JSON.parse(decodedText);
-            console.log("Data hasil scan:", data);
+            console.log("Parsed data:", data);
             
             if (data.type === 'DAILY_REPORT_SYNC') {
-                let report = null;
-                let searchMethod = "";
+                // CARI BERDASARKAN ID
+                let report = reports.find(r => r.id === data.id);
                 
-                // STRATEGI 1: Cari berdasarkan ID (Paling akurat)
-                if (data.id) {
-                    report = reports.find(r => r.id === data.id);
-                    if (report) {
-                        searchMethod = "ID";
-                        console.log("✅ Ditemukan berdasarkan ID:", report.id);
-                    }
-                }
-                
-                // STRATEGI 2: Cari berdasarkan uniqueCode
-                if (!report && data.uniqueCode) {
-                    report = reports.find(r => {
-                        const uniqueCode = getDailyUniqueCode(r.operatorName, r.tanggal, r.divisi, r.id);
-                        return uniqueCode === data.uniqueCode;
-                    });
-                    if (report) {
-                        searchMethod = "UniqueCode";
-                        console.log("✅ Ditemukan berdasarkan UniqueCode:", report.id);
-                    }
-                }
-                
-                // STRATEGI 3: Cari berdasarkan operatorName + tanggal + aktivitas
-                if (!report && data.operatorName && data.tanggal && data.aktivitas) {
-                    report = reports.find(r => 
-                        r.operatorName === data.operatorName && 
-                        r.tanggal === data.tanggal &&
-                        r.aktivitas === data.aktivitas
-                    );
-                    if (report) {
-                        searchMethod = "OperatorName+Tanggal+Aktivitas";
-                        console.log("✅ Ditemukan:", report.id);
-                    }
-                }
-                
-                // STRATEGI 4: Cari berdasarkan operator + tanggal
-                if (!report && data.operator && data.tanggal) {
-                    const candidates = reports.filter(r => 
-                        r.operator === data.operator && 
-                        r.tanggal === data.tanggal
-                    );
-                    console.log(`Kandidat Operator+Tanggal: ${candidates.length}`);
-                    if (candidates.length === 1) {
-                        report = candidates[0];
-                        searchMethod = "Operator+Tanggal (1)";
-                    } else if (candidates.length > 1) {
-                        report = candidates.find(r => parseFloat(r.totalJam) >= 8.0 && !r.synced);
-                        if (report) searchMethod = "Operator+Tanggal (filter)";
-                    }
-                }
-                
-                // STRATEGI 5: Cari berdasarkan operatorName + tanggal
-                if (!report && data.operatorName && data.tanggal) {
-                    const candidates = reports.filter(r => 
-                        r.operatorName === data.operatorName && 
-                        r.tanggal === data.tanggal
-                    );
-                    console.log(`Kandidat OperatorName+Tanggal: ${candidates.length}`);
-                    if (candidates.length === 1) {
-                        report = candidates[0];
-                        searchMethod = "OperatorName+Tanggal (1)";
-                    } else if (candidates.length > 1) {
-                        report = candidates.find(r => parseFloat(r.totalJam) >= 8.0 && !r.synced);
-                        if (report) searchMethod = "OperatorName+Tanggal (filter)";
-                    }
+                if (!report && data.id) {
+                    // Coba konversi ke number
+                    report = reports.find(r => r.id === parseInt(data.id));
                 }
                 
                 if (report) {
-                    console.log("=== LAPORAN DITEMUKAN ===");
-                    console.log("Metode:", searchMethod);
-                    console.log("ID:", report.id, "Jam:", report.totalJam, "Synced:", report.synced);
+                    console.log("Laporan ditemukan:", report);
                     
                     if (report.synced) {
-                        scanResultDiv.innerHTML = `⚠️ Laporan dari ${report.operatorName} tanggal ${report.tanggal} sudah pernah di-sync!`;
-                        scanResultDiv.className = "scan-result error";
-                        setTimeout(() => autoStopScannerAfterSync(`⚠️ Laporan sudah pernah di-sync`), 2000);
+                        resultDiv.innerHTML = `⚠️ Laporan ${report.operatorName} tgl ${report.tanggal} SUDAH pernah di-sync!`;
+                        resultDiv.className = "scan-result error";
+                        setTimeout(() => stopScanner(), 2000);
                     } else if (parseFloat(report.totalJam) >= 8.0) {
+                        // SYNC BERHASIL
                         report.synced = true;
                         report.syncDate = new Date().toISOString();
                         
                         syncQueue.unshift({
                             id: report.id,
-                            uniqueCode: getDailyUniqueCode(report.operatorName, report.tanggal, report.divisi, report.id),
-                            operator: report.operator,
                             operatorName: report.operatorName,
                             divisi: report.divisi,
                             tanggal: report.tanggal,
@@ -1174,53 +863,42 @@
                         });
                         
                         saveToLocal();
-                        scanResultDiv.innerHTML = `✅ BERHASIL! ${report.operatorName} - ${report.tanggal}\n"${report.aktivitas.substring(0,40)}"\nTotal jam: ${report.totalJam} jam`;
-                        scanResultDiv.className = "scan-result success";
+                        resultDiv.innerHTML = `✅ BERHASIL! ${report.operatorName} - ${report.tanggal}\nTotal ${report.totalJam} jam - TERSYNC!`;
+                        resultDiv.className = "scan-result success";
                         
-                        if (currentUser && currentUser.role === 'admin') {
+                        if (currentUser?.role === 'admin') {
                             setTimeout(() => renderAdminPanel(), 1500);
                         }
-                        autoStopScannerAfterSync(`✅ Sync berhasil!`);
+                        setTimeout(() => stopScanner(), 2000);
                     } else {
-                        scanResultDiv.innerHTML = `❌ GAGAL! Total jam: ${report.totalJam} jam (minimal 8 jam)`;
-                        scanResultDiv.className = "scan-result error";
-                        setTimeout(() => autoStopScannerAfterSync(`❌ Total jam ${report.totalJam} (<8 jam)`), 2000);
+                        resultDiv.innerHTML = `❌ GAGAL! Total jam ${report.totalJam} jam (minimal 8 jam)`;
+                        resultDiv.className = "scan-result error";
+                        setTimeout(() => stopScanner(), 2000);
                     }
                 } else {
-                    console.log("=== LAPORAN TIDAK DITEMUKAN ===");
-                    console.log("Data dicari:", {id:data.id, uniqueCode:data.uniqueCode, operator:data.operator, tanggal:data.tanggal});
-                    console.log("Total laporan tersedia:", reports.length);
-                    
-                    scanResultDiv.innerHTML = `❌ Kode QR tidak valid! Laporan tidak ditemukan.\n\nOperator: ${data.operatorName || data.operator || '?'}\nTanggal: ${data.tanggal || '?'}\nAktivitas: ${(data.aktivitas || '?').substring(0,30)}\n\nPastikan laporan sudah diisi dan total jam ≥ 8 jam.`;
-                    scanResultDiv.className = "scan-result error";
-                    setTimeout(() => autoStopScannerAfterSync(`❌ Laporan tidak ditemukan`), 4000);
+                    console.log("Laporan TIDAK ditemukan. Data yang discan:", data);
+                    console.log("Daftar laporan yang ada:", reports.map(r => ({id: r.id, operator: r.operatorName, tanggal: r.tanggal, jam: r.totalJam, synced: r.synced})));
+                    resultDiv.innerHTML = `❌ Kode QR tidak valid! Laporan ID ${data.id} tidak ditemukan.\nPastikan laporan sudah dibuat dan total jam ≥ 8 jam.`;
+                    resultDiv.className = "scan-result error";
+                    setTimeout(() => stopScanner(), 3000);
                 }
             } else {
-                scanResultDiv.innerHTML = `❌ QR Code tidak valid! Bukan laporan daily report.`;
-                scanResultDiv.className = "scan-result error";
-                setTimeout(() => autoStopScannerAfterSync(`❌ QR tidak valid`), 2000);
+                resultDiv.innerHTML = `❌ Bukan QR Code laporan daily report`;
+                resultDiv.className = "scan-result error";
+                setTimeout(() => stopScanner(), 2000);
             }
-        } catch (e) {
+        } catch(e) {
             console.error("Error:", e);
-            scanResultDiv.innerHTML = `❌ QR Code tidak dapat dibaca! Format tidak sesuai.`;
-            scanResultDiv.className = "scan-result error";
-            setTimeout(() => autoStopScannerAfterSync(`❌ Format QR salah`), 2000);
+            resultDiv.innerHTML = `❌ QR Code tidak terbaca: ${e.message}`;
+            resultDiv.className = "scan-result error";
+            setTimeout(() => stopScanner(), 2000);
         }
-        
-        if (navigator.vibrate) navigator.vibrate(200);
     }
     
     // ==================== OPERATOR PANEL ====================
     function renderOperatorPanel() {
         let userReports = reports.filter(r => r.operator === currentUser.username);
-        userReports.sort((a, b) => {
-            const dateA = a.tanggal.split('/').reverse().join('-');
-            const dateB = b.tanggal.split('/').reverse().join('-');
-            if (dateA === dateB) {
-                return b.id - a.id;
-            }
-            return dateB.localeCompare(dateA);
-        });
+        userReports.sort((a,b) => b.id - a.id);
         
         let filteredReports = userReports;
         if (currentDateFilter) {
@@ -1229,109 +907,73 @@
         
         const eligibleReports = filteredReports.filter(r => isEligibleForQR(r));
         const syncedReports = filteredReports.filter(r => r.synced === true);
-        
-        const availableDates = [...new Set(userReports.map(r => r.tanggal))].sort((a, b) => {
-            const dateA = a.split('/').reverse().join('-');
-            const dateB = b.split('/').reverse().join('-');
-            return dateB.localeCompare(dateA);
-        });
+        const availableDates = [...new Set(userReports.map(r => r.tanggal))];
         
         let qrHtml = '';
         if (eligibleReports.length > 0) {
             eligibleReports.forEach(report => {
-                const qrId = `qr_${report.id}`;
-                const uniqueCode = getDailyUniqueCode(report.operatorName, report.tanggal, report.divisi, report.id);
                 qrHtml += `
-                    <div class="qr-container" id="qrContainer_${report.id}">
+                    <div class="qr-container">
                         <div class="qr-title">📱 QR Code Sync - ${report.tanggal}</div>
                         <div class="qr-status success">
-                            ✅ Aktivitas memenuhi syarat! (Total Jam: ${report.totalJam} jam)<br>
-                            <small>${report.aktivitas.substring(0,40)}</small><br>
-                            <small>Kode Unik: ${uniqueCode}</small>
+                            ✅ ${report.aktivitas} (${report.totalJam} jam)
                         </div>
-                        <div class="qr-code" id="${qrId}"></div>
+                        <div class="qr-code" id="qr_${report.id}"></div>
                         <button class="sync-btn" onclick="markAsSynced(${report.id})">✅ Tandai Sudah Disync</button>
                     </div>
                 `;
             });
         } else {
-            qrHtml = `
-                <div class="qr-container">
-                    <div class="qr-title">📱 QR Code Sync</div>
-                    <div class="qr-status warning">
-                        ⚠️ Belum ada aktivitas dengan durasi minimal 8 jam.<br>
-                        Silakan isi data pada tabel di bawah ini terlebih dahulu.
-                    </div>
-                </div>
-            `;
+            qrHtml = `<div class="qr-container"><div class="qr-status warning">⚠️ Belum ada aktivitas dengan total jam ≥ 8 jam</div></div>`;
         }
         
         if (syncedReports.length > 0) {
-            qrHtml += `
-                <div class="qr-container">
-                    <div class="qr-title">✅ Riwayat Sync</div>
-                    ${syncedReports.map(r => {
-                        const uniqueCode = getDailyUniqueCode(r.operatorName, r.tanggal, r.divisi, r.id);
-                        return `
-                            <div class="qr-status info" style="margin:5px 0;">
-                                📅 ${r.tanggal} - ${r.aktivitas.substring(0,30)} (${r.totalJam} jam) - TERSYNC ✓<br>
-                                <small>Kode: ${uniqueCode}</small>
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            `;
+            qrHtml += `<div class="qr-container"><div class="qr-title">✅ Riwayat Sync</div>`;
+            syncedReports.forEach(r => {
+                qrHtml += `<div class="qr-status info">📅 ${r.tanggal} - ${r.aktivitas} (${r.totalJam} jam) - TERSYNC ✓</div>`;
+            });
+            qrHtml += `</div>`;
         }
         
         let tableHtml = `
             <div class="spreadsheet-card">
                 <div class="spreadsheet-toolbar">
-                    <button class="toolbar-btn" onclick="addRowOperator()">➕ Tambah Baris Baru</button>
+                    <button class="toolbar-btn" onclick="addRowOperator()">➕ Tambah Baris</button>
                     <button class="toolbar-btn excel" onclick="exportOperatorToExcel('${currentUser.username}')">📎 Export XLSX</button>
                     <div class="search-container">
-                        <select id="dateFilterSelect" class="search-input" onchange="filterByDate(this.value)">
+                        <select class="search-input" onchange="filterByDate(this.value)">
                             <option value="">Semua Tanggal</option>
-                            ${availableDates.map(date => `<option value="${date}" ${currentDateFilter === date ? 'selected' : ''}>${date}</option>`).join('')}
+                            ${availableDates.map(d => `<option value="${d}" ${currentDateFilter===d ? 'selected':''}>${d}</option>`).join('')}
                         </select>
                         ${currentDateFilter ? `<button class="toolbar-btn" onclick="clearDateFilter()">✖️ Hapus Filter</button>` : ''}
                     </div>
                 </div>
                 <div class="spreadsheet-wrapper">
                     <table class="spreadsheet-table">
-                        <thead>
-                            <tr><th>Tanggal</th><th>Aktivitas</th><th>Mulai</th><th>Selesai</th><th>Total Jam</th><th>Status</th><th>Catatan</th><th>Sync</th><th>Aksi</th></tr>
-                        </thead>
+                        <thead><tr><th>Tanggal</th><th>Aktivitas</th><th>Mulai</th><th>Selesai</th><th>Total Jam</th><th>Status</th><th>Catatan</th><th>Sync</th><th>Aksi</th></tr></thead>
                         <tbody>
-                            ${filteredReports.map(r => {
-                                const uniqueCode = getDailyUniqueCode(r.operatorName, r.tanggal, r.divisi, r.id);
-                                return `
-                                    <tr>
-                                        <td contenteditable="true" onblur="updateField(${r.id}, 'tanggal', this.textContent)">${r.tanggal}<br><small style="font-size:9px;">${uniqueCode}</small></td>
-                                        <td contenteditable="true" onblur="updateField(${r.id}, 'aktivitas', this.textContent)">${r.aktivitas || '(kosong)'}</td>
-                                        <td contenteditable="true" onblur="updateField(${r.id}, 'mulai', this.textContent); updateTotalJamField(${r.id})">${r.mulai || '-'}</td>
-                                        <td contenteditable="true" onblur="updateField(${r.id}, 'selesai', this.textContent); updateTotalJamField(${r.id})">${r.selesai || '-'}</td>
-                                        <td class="number-cell">${r.totalJam} jam</td>
-                                        <td>
-                                            <select onchange="updateField(${r.id}, 'status', this.value)" 
-                                                    style="padding: 4px 8px; border-radius: 4px; border: 1px solid #ddd;
-                                                           ${r.status === 'Done' ? 'background: #d4edda; color: #155724;' : 
-                                                             r.status === 'Progress' ? 'background: #fff3cd; color: #856404;' : 
-                                                             'background: #f8d7da; color: #721c24;'}">
-                                                <option value="Pending" ${r.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                                                <option value="Progress" ${r.status === 'Progress' ? 'selected' : ''}>Progress</option>
-                                                <option value="Done" ${r.status === 'Done' ? 'selected' : ''}>Done</option>
-                                            </select>
-                                        </td>
-                                        <td contenteditable="true" onblur="updateField(${r.id}, 'catatan', this.textContent)">${r.catatan || ''}</td>
-                                        <td>${r.synced ? '✅ Tersync' : (isEligibleForQR(r) ? '📱 Siap Sync' : '⏳ Belum')}</td>
-                                        <td style="white-space: nowrap;">
-                                            <button onclick="clearRow(${r.id})" style="background:#e67e22; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; margin-right:4px; font-size:11px;">🗑️ Kosongkan</button>
-                                            <button onclick="deleteRow(${r.id})" style="background:#e74c3c; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">❌ Hapus</button>
-                                        </td>
-                                    </tr>
-                                `;
-                            }).join('')}
-                            ${filteredReports.length === 0 ? '<tr><td colspan="9" style="text-align:center; padding: 30px;">📋 Belum ada data. Klik "Tambah Baris Baru" untuk memulai</td></tr>' : ''}
+                            ${filteredReports.map(r => `
+                                <tr>
+                                    <td contenteditable="true" onblur="updateField(${r.id}, 'tanggal', this.textContent)">${r.tanggal}</td>
+                                    <td contenteditable="true" onblur="updateField(${r.id}, 'aktivitas', this.textContent)">${r.aktivitas || '(kosong)'}</td>
+                                    <td contenteditable="true" onblur="updateField(${r.id}, 'mulai', this.textContent); updateTotalJam(${r.id})">${r.mulai || '-'}</td>
+                                    <td contenteditable="true" onblur="updateField(${r.id}, 'selesai', this.textContent); updateTotalJam(${r.id})">${r.selesai || '-'}</td>
+                                    <td class="number-cell">${r.totalJam} jam</td>
+                                    <td>
+                                        <select onchange="updateField(${r.id}, 'status', this.value)">
+                                            <option ${r.status==='Pending'?'selected':''}>Pending</option>
+                                            <option ${r.status==='Progress'?'selected':''}>Progress</option>
+                                            <option ${r.status==='Done'?'selected':''}>Done</option>
+                                        </select>
+                                    </td>
+                                    <td contenteditable="true" onblur="updateField(${r.id}, 'catatan', this.textContent)">${r.catatan || ''}</td>
+                                    <td>${r.synced ? '✅ Tersync' : (isEligibleForQR(r) ? '📱 Siap Sync' : '⏳ Belum')}</td>
+                                    <td>
+                                        <button onclick="deleteRow(${r.id})" style="background:#e74c3c; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">❌ Hapus</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                            ${filteredReports.length === 0 ? '<tr><td colspan="9" style="text-align:center;">Belum ada data. Klik "Tambah Baris"</td></tr>' : ''}
                         </tbody>
                     </table>
                 </div>
@@ -1340,27 +982,19 @@
         
         document.getElementById('mainContent').innerHTML = qrHtml + tableHtml;
         
+        // Generate QR Code
         setTimeout(() => {
             eligibleReports.forEach(report => {
-                const qrId = `qr_${report.id}`;
-                const element = document.getElementById(qrId);
-                if (element) {
-                    const qrData = generateQRData(report);
-                    generateQRCode(element, qrData, 200);
+                const el = document.getElementById(`qr_${report.id}`);
+                if (el && !el.hasChildNodes()) {
+                    generateQRCode(el, generateQRData(report), 200);
                 }
             });
         }, 100);
     }
     
-    window.filterByDate = function(date) {
-        currentDateFilter = date;
-        renderOperatorPanel();
-    };
-    
-    window.clearDateFilter = function() {
-        currentDateFilter = '';
-        renderOperatorPanel();
-    };
+    window.filterByDate = function(date) { currentDateFilter = date; renderOperatorPanel(); };
+    window.clearDateFilter = function() { currentDateFilter = ''; renderOperatorPanel(); };
     
     window.updateField = function(id, field, value) {
         const report = reports.find(r => r.id === id);
@@ -1374,7 +1008,7 @@
         }
     };
     
-    window.updateTotalJamField = function(id) {
+    window.updateTotalJam = function(id) {
         const report = reports.find(r => r.id === id);
         if (report) {
             report.totalJam = calculateTotalJam(report.mulai, report.selesai);
@@ -1388,176 +1022,93 @@
         if (report && isEligibleForQR(report)) {
             report.synced = true;
             report.syncDate = new Date().toISOString();
-            
             syncQueue.unshift({
-                id: report.id,
-                uniqueCode: getDailyUniqueCode(report.operatorName, report.tanggal, report.divisi, report.id),
-                operator: report.operator,
-                operatorName: report.operatorName,
-                divisi: report.divisi,
-                tanggal: report.tanggal,
-                aktivitas: report.aktivitas,
-                totalJam: report.totalJam,
-                syncDate: report.syncDate
+                id: report.id, operatorName: report.operatorName, divisi: report.divisi,
+                tanggal: report.tanggal, aktivitas: report.aktivitas, totalJam: report.totalJam, syncDate: report.syncDate
             });
-            
             saveToLocal();
-            alert(`✅ Laporan "${report.aktivitas}" tanggal ${report.tanggal} telah ditandai sync!`);
+            alert(`✅ Laporan "${report.aktivitas}" tgl ${report.tanggal} ditandai sync!`);
             renderOperatorPanel();
         } else if (report && parseFloat(report.totalJam) < 8.0) {
-            alert(`⚠️ Laporan belum memenuhi syarat! Total jam: ${report.totalJam} jam (minimal 8 jam)`);
-        } else {
-            alert(`⚠️ Laporan tidak ditemukan!`);
+            alert(`⚠️ Total jam ${report.totalJam} (<8 jam)`);
         }
     };
     
     window.addRowOperator = function() {
-        const today = getTodayDate();
-        
         const newId = reports.length > 0 ? Math.max(...reports.map(r => r.id)) + 1 : 1;
-        const newRow = {
-            id: newId,
-            operator: currentUser.username,
-            operatorName: currentUser.name,
-            divisi: currentUser.divisi,
-            tanggal: today,
-            aktivitas: '',
-            mulai: '',
-            selesai: '',
-            status: 'Pending',
-            catatan: '',
-            totalJam: '0.0',
-            synced: false,
-            createdAt: new Date().toISOString()
-        };
-        reports.push(newRow);
+        reports.push({
+            id: newId, operator: currentUser.username, operatorName: currentUser.name,
+            divisi: currentUser.divisi, tanggal: getTodayDate(), aktivitas: '',
+            mulai: '', selesai: '', status: 'Pending', catatan: '', totalJam: '0.0', synced: false
+        });
         saveToLocal();
-        
-        if (currentDateFilter) {
-            currentDateFilter = '';
-        }
-        
         renderOperatorPanel();
-        
-        setTimeout(() => {
-            const rows = document.querySelectorAll('.spreadsheet-table tbody tr');
-            if (rows.length > 0) {
-                rows[rows.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }, 100);
-        
-        alert(`✅ Baris baru telah ditambahkan untuk tanggal ${today}!\n\nSilakan isi aktivitas, jam mulai, dan jam selesai.\n\nAnda dapat menambah banyak baris untuk tanggal yang sama.`);
+        alert(`✅ Baris baru untuk ${getTodayDate()} ditambahkan`);
     };
     
-    window.clearRow = function(rowId) {
-        const report = reports.find(r => r.id === rowId);
-        if (report && confirm(`Kosongkan semua kolom pada baris ini?`)) {
-            report.aktivitas = '';
-            report.mulai = '';
-            report.selesai = '';
-            report.catatan = '';
-            report.totalJam = '0.0';
-            report.status = 'Pending';
+    window.deleteRow = function(id) {
+        if (confirm('Hapus baris ini?')) {
+            reports = reports.filter(r => r.id !== id);
             saveToLocal();
             renderOperatorPanel();
-            alert('Isi baris telah dikosongkan');
-        }
-    };
-    
-    window.deleteRow = function(rowId) {
-        if (confirm(`Yakin ingin menghapus baris ini secara permanen?`)) {
-            reports = reports.filter(r => r.id !== rowId);
-            saveToLocal();
-            renderOperatorPanel();
-            alert('Baris telah dihapus');
         }
     };
     
     // ==================== ADMIN PANEL ====================
     function renderAdminPanel() {
-        const syncedItems = syncQueue;
-        const syncedReportsCount = reports.filter(r => r.synced === true).length;
-        
         let content = `
-            <div class="scanner-container" id="scanner-container">
+            <div class="scanner-container">
                 <div class="qr-title">📷 Scanner QR Code</div>
                 <div class="scanner-buttons">
                     <button class="camera-btn start" id="btnStartScan" onclick="startScanner()">▶️ Start Scanner</button>
                     <button class="camera-btn stop" id="btnStopScan" onclick="stopScanner()" disabled>⏹️ Stop Scanner</button>
                 </div>
-                <div class="video-container">
-                    <div id="preview"></div>
-                </div>
-                <div class="scan-result info" id="scanResult">🔍 Klik Start Scanner untuk memulai</div>
+                <div class="video-container"><div id="preview"></div></div>
+                <div class="scan-result info" id="scanResult">🔍 Klik Start Scanner</div>
             </div>
             
             <div class="qr-container">
                 <div class="qr-title">📋 Manajemen Data</div>
                 <div class="btn-group">
                     <button class="toolbar-btn reset" onclick="resetAllData()">🗑️ Reset Semua Data</button>
-                    <button class="toolbar-btn sync-reset" onclick="resetSyncStatusOnly()">🔄 Reset Status Sync (${syncedReportsCount} laporan)</button>
-                    <button class="toolbar-btn history-reset" onclick="resetSyncHistoryOnly()">📋 Reset Riwayat Sync (${syncedItems.length} item)</button>
-                    <button class="toolbar-btn excel" onclick="exportSyncQueueToExcel()">📎 Export Sync Queue XLSX</button>
+                    <button class="toolbar-btn sync-reset" onclick="resetSyncStatusOnly()">🔄 Reset Status Sync</button>
+                    <button class="toolbar-btn history-reset" onclick="resetSyncHistoryOnly()">📋 Reset Riwayat Sync</button>
+                    <button class="toolbar-btn excel" onclick="exportSyncQueueToExcel()">📎 Export Sync Queue</button>
                 </div>
-                <div class="reset-info">
-                    💡 <strong>Keterangan:</strong><br>
-                    • <strong style="color:#e74c3c;">Reset Semua Data</strong> = Hapus semua laporan + riwayat sync<br>
-                    • <strong style="color:#e67e22;">Reset Status Sync</strong> = Laporan bisa di-scan ULANG (tanpa hapus data)<br>
-                    • <strong style="color:#3498db;">Reset Riwayat Sync</strong> = Hapus catatan scan QR saja
-                </div>
+                <div class="reset-info">💡 Reset Status Sync = laporan bisa di-scan ULANG | Reset Riwayat Sync = hapus catatan scan</div>
             </div>
             
             <div class="qr-container">
-                <div class="qr-title">📋 Riwayat Sync dari Operator</div>
-                ${syncedItems.length === 0 ? '<div class="qr-status info">Belum ada data sync dari operator</div>' : ''}
-                ${syncedItems.map(s => `
-                    <div class="qr-status success" style="margin:8px 0;">
-                        ✅ ${s.tanggal} - ${s.operatorName} (${s.divisi}) - "${s.aktivitas.substring(0,40)}..." - ${s.totalJam} jam<br>
-                        <small>Unique Code: ${s.uniqueCode}</small>
-                        <br><small>Sync: ${new Date(s.syncDate).toLocaleString('id')}</small>
-                    </div>
+                <div class="qr-title">📋 Riwayat Sync (${syncQueue.length})</div>
+                ${syncQueue.length === 0 ? '<div class="qr-status info">Belum ada sync</div>' : syncQueue.map(s => `
+                    <div class="qr-status success">✅ ${s.tanggal} - ${s.operatorName} - "${s.aktivitas.substring(0,40)}" - ${s.totalJam} jam<br><small>${new Date(s.syncDate).toLocaleString('id')}</small></div>
                 `).join('')}
             </div>
             
             <div class="tabs-container">
                 <div class="tabs-header">
-                    ${operators.map((op, idx) => `<button class="tab-btn ${idx === 0 ? 'active' : ''}" onclick="switchTab('tab_${op.username}')">👤 ${op.name}<br><span style="font-size:10px;">${op.divisi}</span></button>`).join('')}
-                    <button class="tab-btn" onclick="exportAllToExcel()">📎 Export Semua XLSX</button>
+                    ${operators.map((op, i) => `<button class="tab-btn ${i===0?'active':''}" onclick="switchTab('tab_${op.username}')">👤 ${op.name}<br><span style="font-size:10px;">${op.divisi}</span></button>`).join('')}
+                    <button class="tab-btn" onclick="exportAllToExcel()">📎 Export Semua</button>
                 </div>
-                ${operators.map((op, idx) => {
+                ${operators.map((op, i) => {
                     const opReports = reports.filter(r => r.operator === op.username);
                     return `
-                        <div class="tab-content ${idx === 0 ? 'active' : ''}" id="tab_${op.username}">
-                            <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
-                                <button class="toolbar-btn excel" onclick="exportOperatorToExcel('${op.username}')">📎 Export ${op.name} XLSX</button>
-                            </div>
+                        <div class="tab-content ${i===0?'active':''}" id="tab_${op.username}">
+                            <div style="text-align:right; margin-bottom:10px;"><button class="toolbar-btn excel" onclick="exportOperatorToExcel('${op.username}')">📎 Export ${op.name}</button></div>
                             <div class="spreadsheet-wrapper">
                                 <table class="spreadsheet-table">
-                                    <thead>
-                                        <tr><th>Tanggal</th><th>Unique Code</th><th>Aktivitas</th><th>Mulai</th><th>Selesai</th><th>Total Jam</th><th>Status</th><th>Catatan</th><th>Sync Status</th></tr>
-                                    </thead>
+                                    <thead><tr><th>Tanggal</th><th>Aktivitas</th><th>Mulai</th><th>Selesai</th><th>Total Jam</th><th>Status</th><th>Catatan</th><th>Sync</th></tr></thead>
                                     <tbody>
-                                        ${opReports.map(r => {
-                                            const uniqueCode = getDailyUniqueCode(r.operatorName, r.tanggal, r.divisi, r.id);
-                                            return `
-                                                <tr>
-                                                    <td>${r.tanggal}</td>
-                                                    <td><small>${uniqueCode}</small></td>
-                                                    <td>${r.aktivitas || '-'}</td>
-                                                    <td>${r.mulai || '-'}</td>
-                                                    <td>${r.selesai || '-'}</td>
-                                                    <td class="number-cell">${r.totalJam} jam</td>
-                                                    <td>
-                                                        <span class="status-badge ${r.status === 'Done' ? 'status-done' : r.status === 'Progress' ? 'status-progress' : 'status-pending'}">
-                                                            ${r.status}
-                                                        </span>
-                                                    </td>
-                                                    <td>${r.catatan || '-'}</td>
-                                                    <td>${r.synced ? '<span style="color:green;">✅ Tersync</span>' : (parseFloat(r.totalJam) >= 8 ? '📱 Siap Sync' : '⏳ Belum')}</td>
-                                                </tr>
-                                            `;
-                                        }).join('')}
-                                        ${opReports.length === 0 ? '<tr><td colspan="9" style="text-align:center;">Belum ada data laporan</td></tr>' : ''}
+                                        ${opReports.map(r => `
+                                            <tr>
+                                                <td>${r.tanggal}</td><td>${r.aktivitas||'-'}</td><td>${r.mulai||'-'}</td><td>${r.selesai||'-'}</td>
+                                                <td class="number-cell">${r.totalJam} jam</td>
+                                                <td><span class="status-badge ${r.status==='Done'?'status-done':r.status==='Progress'?'status-progress':'status-pending'}">${r.status}</span></td>
+                                                <td>${r.catatan||'-'}</td>
+                                                <td>${r.synced ? '✅ Tersync' : (parseFloat(r.totalJam)>=8 ? '📱 Siap Sync' : '⏳ Belum')}</td>
+                                            </tr>
+                                        `).join('')}
+                                        ${opReports.length===0 ? '<tr><td colspan="8">Belum ada data</td></tr>' : ''}
                                     </tbody>
                                 </table>
                             </div>
@@ -1566,40 +1117,35 @@
                 }).join('')}
             </div>
         `;
-        
         document.getElementById('mainContent').innerHTML = content;
     }
     
     window.switchTab = function(tabId) {
-        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
         const btns = document.querySelectorAll('.tab-btn');
-        const index = Array.from(document.querySelectorAll('.tab-content')).findIndex(tab => tab.id === tabId);
-        if (btns[index]) btns[index].classList.add('active');
+        const idx = Array.from(document.querySelectorAll('.tab-content')).findIndex(t => t.id === tabId);
+        if (btns[idx]) btns[idx].classList.add('active');
     };
     
     // ==================== LOGIN ====================
     function handleLogin() {
-        const roleBtn = document.querySelector('.role-btn.active');
-        const role = roleBtn ? roleBtn.dataset.role : 'operator';
-        const selectedValue = document.getElementById('loginUsername').value;
+        const role = document.querySelector('.role-btn.active').dataset.role;
+        const selected = document.getElementById('loginUsername').value;
         const password = document.getElementById('loginPassword').value;
         
-        if (!selectedValue) {
-            document.getElementById('loginError').textContent = 'Pilih username!';
-            return;
-        }
+        if (!selected) { document.getElementById('loginError').textContent = 'Pilih username!'; return; }
         
         if (role === 'admin') {
-            if (selectedValue === 'admin' && password === 'leader01') {
+            if (selected === 'admin' && password === 'leader01') {
                 currentUser = { username: 'admin', name: 'Administrator', role: 'admin', divisi: 'Admin' };
                 showMainApp();
             } else {
                 document.getElementById('loginError').textContent = 'Username atau password admin salah!';
             }
         } else {
-            const operator = operators.find(op => op.username === selectedValue);
+            const operator = operators.find(op => op.username === selected);
             if (operator && operator.password === password) {
                 currentUser = { username: operator.username, name: operator.name, role: 'operator', divisi: operator.divisi };
                 showMainApp();
@@ -1626,7 +1172,6 @@
     async function logout() {
         await stopScanner();
         currentUser = null;
-        currentDateFilter = '';
         document.getElementById('appContainer').style.display = 'none';
         document.getElementById('loginPanel').style.display = 'flex';
         document.getElementById('loginUsername').value = '';
@@ -1643,13 +1188,11 @@
             if (this.dataset.role === 'admin') {
                 dropdown.innerHTML = '<option value="admin">Admin</option>';
             } else {
-                dropdown.innerHTML = `
-                    <option value="">-- Pilih Operator --</option>
+                dropdown.innerHTML = `<option value="">-- Pilih Operator --</option>
                     <option value="darma">Darma (Raw Material)</option>
                     <option value="nurhadi">Nurhadi (Raw Material)</option>
                     <option value="athar">Athar (Finish Goods)</option>
-                    <option value="purnomo">Purnomo (Save Material)</option>
-                `;
+                    <option value="purnomo">Purnomo (Save Material)</option>`;
             }
         });
     });
@@ -1673,25 +1216,25 @@
     
     loadFromLocal();
     
-    // Expose functions globally
+    // Expose functions
     window.startScanner = startScanner;
     window.stopScanner = stopScanner;
-    window.updateField = updateField;
-    window.updateTotalJamField = updateTotalJamField;
-    window.markAsSynced = markAsSynced;
-    window.addRowOperator = addRowOperator;
-    window.switchTab = switchTab;
-    window.handleScanResult = handleScanResult;
-    window.exportAllToExcel = exportAllToExcel;
-    window.exportOperatorToExcel = exportOperatorToExcel;
-    window.exportSyncQueueToExcel = exportSyncQueueToExcel;
     window.resetAllData = resetAllData;
     window.resetSyncStatusOnly = resetSyncStatusOnly;
     window.resetSyncHistoryOnly = resetSyncHistoryOnly;
+    window.exportAllToExcel = exportAllToExcel;
+    window.exportOperatorToExcel = exportOperatorToExcel;
+    window.exportSyncQueueToExcel = exportSyncQueueToExcel;
     window.filterByDate = filterByDate;
     window.clearDateFilter = clearDateFilter;
-    window.clearRow = clearRow;
+    window.updateField = updateField;
+    window.updateTotalJam = updateTotalJam;
+    window.markAsSynced = markAsSynced;
+    window.addRowOperator = addRowOperator;
     window.deleteRow = deleteRow;
+    window.switchTab = switchTab;
+    window.handleLogin = handleLogin;
+    window.logout = logout;
 </script>
 </body>
 </html>
