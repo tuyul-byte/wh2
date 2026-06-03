@@ -3,691 +3,471 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Daily Report System - QR Transfer</title>
+    <title>Daily Report System - Cloud Sync</title>
     <style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-/* Splash Screen */
-.splash-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    transition: opacity 0.5s ease;
-}
-
-.splash-content {
-    text-align: center;
-    color: white;
-}
-
-.splash-logo {
-    font-size: 64px;
-    margin-bottom: 20px;
-    animation: bounce 1s ease infinite;
-}
-
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-20px); }
-}
-
-.progress-bar {
-    width: 250px;
-    height: 4px;
-    background: rgba(255,255,255,0.3);
-    border-radius: 10px;
-    margin: 30px auto 0;
-    overflow: hidden;
-}
-
-.progress-fill {
-    width: 0%;
-    height: 100%;
-    background: white;
-    border-radius: 10px;
-    transition: width 0.3s ease;
-}
-
-/* Login Panel */
-.login-container {
-    display: none;
-    min-height: 100vh;
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-}
-
-.login-card {
-    background: white;
-    border-radius: 20px;
-    padding: 40px;
-    width: 100%;
-    max-width: 450px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    animation: slideUp 0.5s ease;
-}
-
-@keyframes slideUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.login-header {
-    text-align: center;
-    margin-bottom: 15px;
-}
-
-.login-header h2 {
-    font-size: 28px;
-    color: #1e3c72;
-    margin-bottom: 8px;
-}
-
-.login-header p {
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 5px;
-}
-
-.login-header.with-spacing {
-    margin-bottom: 30px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #e0e0e0;
-}
-
-.divider {
-    height: 1px;
-    background: linear-gradient(90deg, transparent, #ccc, transparent);
-    margin: 25px 0 20px 0;
-}
-
-.role-selector {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 30px;
-}
-
-.role-btn {
-    flex: 1;
-    padding: 12px;
-    border: 2px solid #e0e0e0;
-    background: white;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.3s;
-    font-weight: 600;
-}
-
-.role-btn.active {
-    border-color: #2a5298;
-    background: #2a5298;
-    color: white;
-}
-
-.input-group {
-    margin-bottom: 25px;
-}
-
-.input-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 500;
-    color: #333;
-}
-
-.input-group input, .input-group select {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid #e0e0e0;
-    border-radius: 10px;
-    font-size: 14px;
-    transition: 0.3s;
-}
-
-.input-group input:focus, .input-group select:focus {
-    outline: none;
-    border-color: #2a5298;
-}
-
-.login-btn {
-    width: 100%;
-    padding: 14px;
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 10px;
-    transition: transform 0.2s;
-}
-
-.login-btn:hover {
-    transform: translateY(-2px);
-}
-
-.error-msg {
-    color: #e74c3c;
-    font-size: 12px;
-    margin-top: 15px;
-    text-align: center;
-}
-
-.info-login {
-    margin-top: 25px;
-    font-size: 12px;
-    text-align: center;
-    color: #999;
-    border-top: 1px solid #eee;
-    padding-top: 20px;
-}
-
-.info-login p {
-    margin: 5px 0;
-}
-
-/* Main App */
-.app-container {
-    display: none;
-}
-
-.navbar {
-    background: #1e3c72;
-    color: white;
-    padding: 15px 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 15px;
-}
-
-.user-info {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.user-badge {
-    background: #3498db;
-    padding: 6px 15px;
-    border-radius: 20px;
-    font-size: 14px;
-}
-
-.logout-btn {
-    background: #e74c3c;
-    border: none;
-    padding: 6px 15px;
-    border-radius: 20px;
-    color: white;
-    cursor: pointer;
-}
-
-.main-content {
-    padding: 20px;
-    background: #f0f2f5;
-    min-height: calc(100vh - 70px);
-}
-
-/* QR Code Styles */
-.qr-container {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-.qr-title {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 10px;
-    color: #1e3c72;
-}
-
-.qr-status {
-    padding: 10px;
-    border-radius: 8px;
-    margin: 15px 0;
-    font-weight: bold;
-}
-
-.qr-status.success {
-    background: #d4edda;
-    color: #155724;
-}
-
-.qr-status.warning {
-    background: #fff3cd;
-    color: #856404;
-}
-
-.qr-status.error {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-.qr-code {
-    padding: 20px;
-    background: white;
-    display: inline-block;
-    border-radius: 10px;
-}
-
-.qr-code img {
-    display: block;
-    margin: 0 auto;
-}
-
-/* Transfer Scanner Styles */
-.scanner-container {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-.scanner-buttons {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-}
-
-.camera-btn {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.camera-btn.start {
-    background: #27ae60;
-    color: white;
-}
-
-.camera-btn.start:hover {
-    background: #219a52;
-}
-
-.camera-btn.stop {
-    background: #e74c3c;
-    color: white;
-}
-
-.camera-btn.stop:hover {
-    background: #c0392b;
-}
-
-.camera-btn:disabled {
-    background: #95a5a6;
-    cursor: not-allowed;
-}
-
-.video-container {
-    position: relative;
-    width: 100%;
-    max-width: 500px;
-    margin: 0 auto;
-    border-radius: 10px;
-    overflow: hidden;
-    background: #000;
-}
-
-#transferPreview {
-    width: 100%;
-    height: auto;
-    background: #000;
-}
-
-.scan-result {
-    margin-top: 15px;
-    padding: 12px;
-    border-radius: 8px;
-    text-align: center;
-}
-
-.scan-result.success {
-    background: #d4edda;
-    color: #155724;
-}
-
-.scan-result.error {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-.scan-result.info {
-    background: #cce5ff;
-    color: #004085;
-}
-
-.scan-result.warning {
-    background: #fff3cd;
-    color: #856404;
-}
-
-/* Spreadsheet Styles */
-.spreadsheet-card {
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-.spreadsheet-toolbar {
-    padding: 12px 20px;
-    background: #f8f9fa;
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    align-items: center;
-    border-bottom: 1px solid #ddd;
-}
-
-.toolbar-btn {
-    background: #3498db;
-    color: white;
-    border: none;
-    padding: 6px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-.toolbar-btn.excel {
-    background: #27ae60;
-}
-
-.toolbar-btn.excel:hover {
-    background: #219a52;
-}
-
-.toolbar-btn.reset {
-    background: #e74c3c;
-}
-
-.toolbar-btn.reset:hover {
-    background: #c0392b;
-}
-
-.toolbar-btn.sync-reset {
-    background: #e67e22;
-}
-
-.toolbar-btn.sync-reset:hover {
-    background: #d35400;
-}
-
-.toolbar-btn.history-reset {
-    background: #3498db;
-}
-
-.toolbar-btn.history-reset:hover {
-    background: #2980b9;
-}
-
-.toolbar-btn.whatsapp {
-    background: #25D366;
-}
-
-.toolbar-btn.whatsapp:hover {
-    background: #128C7E;
-}
-
-.toolbar-btn.email {
-    background: #D44638;
-}
-
-.toolbar-btn.email:hover {
-    background: #B23121;
-}
-
-.toolbar-btn.copy {
-    background: #3498db;
-}
-
-.toolbar-btn.qr-transfer {
-    background: #9b59b6;
-}
-
-.toolbar-btn.qr-transfer:hover {
-    background: #8e44ad;
-}
-
-.spreadsheet-wrapper {
-    overflow-x: auto;
-}
-
-.spreadsheet-table {
-    border-collapse: collapse;
-    min-width: 100%;
-    font-size: 13px;
-}
-
-.spreadsheet-table th, .spreadsheet-table td {
-    border: 1px solid #ddd;
-    padding: 12px 8px;
-    min-width: 100px;
-    vertical-align: middle;
-}
-
-.spreadsheet-table th {
-    background: #f8f9fa;
-    font-weight: 600;
-    text-align: center;
-    padding: 14px 8px;
-}
-
-.spreadsheet-table td {
-    padding: 10px 8px;
-}
-
-.number-cell {
-    text-align: right;
-    font-family: monospace;
-}
-
-.status-badge {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: bold;
-}
-
-.status-done { background: #d4edda; color: #155724; }
-.status-progress { background: #fff3cd; color: #856404; }
-.status-pending { background: #f8d7da; color: #721c24; }
-
-.tabs-container {
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    margin-top: 20px;
-}
-
-.tabs-header {
-    display: flex;
-    background: #34495e;
-    overflow-x: auto;
-    gap: 2px;
-}
-
-.tab-btn {
-    padding: 12px 24px;
-    background: #2c3e50;
-    border: none;
-    color: white;
-    cursor: pointer;
-    font-weight: 600;
-    white-space: nowrap;
-}
-
-.tab-btn.active {
-    background: #3498db;
-}
-
-.tab-content {
-    display: none;
-    padding: 20px;
-}
-
-.tab-content.active {
-    display: block;
-}
-
-.search-container {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    margin-left: auto;
-}
-
-.search-input {
-    padding: 6px 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 12px;
-    width: 150px;
-}
-
-.spreadsheet-table th,
-.spreadsheet-table td {
-    min-width: 70px;
-    padding: 4px 6px;
-}
-
-.spreadsheet-table th:nth-child(1),
-.spreadsheet-table td:nth-child(1) {
-    min-width: 70px;
-    text-align: center;
-}
-
-.spreadsheet-table th:nth-child(2),
-.spreadsheet-table td:nth-child(2) {
-    min-width: 120px;
-}
-
-.spreadsheet-table th:nth-child(3),
-.spreadsheet-table td:nth-child(3) {
-    min-width: 40px;
-}
-
-.spreadsheet-table th:nth-child(4),
-.spreadsheet-table td:nth-child(4) {
-    min-width: 40px;
-}
-
-.spreadsheet-table th:nth-child(5),
-.spreadsheet-table td:nth-child(5) {
-    min-width: 75px;
-}
-
-.spreadsheet-table th:nth-child(6),
-.spreadsheet-table td:nth-child(6) {
-    min-width: 70px;
-    text-align: center;
-}
-
-.spreadsheet-table th:nth-child(7),
-.spreadsheet-table td:nth-child(7) {
-    min-width: 100px;
-    text-align: center;
-}
-
-.reset-info {
-    font-size: 12px;
-    color: #666;
-    margin-top: 10px;
-    padding: 10px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    text-align: left;
-}
-
-.reset-info strong {
-    color: #2c3e50;
-}
-
-.btn-group {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-bottom: 10px;
-}
-
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.8);
-    z-index: 10000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 20px;
-    text-align: center;
-    max-width: 90%;
-    max-height: 90%;
-    overflow: auto;
-}
-
-.import-area {
-    border: 2px dashed #3498db;
-    border-radius: 10px;
-    padding: 20px;
-    margin: 10px 0;
-    cursor: pointer;
-    text-align: center;
-}
-
-.import-area:hover {
-    background: #f0f8ff;
-}
-
-.qr-transfer-container {
-    background: white;
-    padding: 20px;
-    border-radius: 16px;
-    text-align: center;
-}
-
-.qr-transfer-container img {
-    display: block;
-    margin: 0 auto;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Splash Screen */
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .splash-content {
+            text-align: center;
+            color: white;
+        }
+
+        .splash-logo {
+            font-size: 64px;
+            margin-bottom: 20px;
+            animation: bounce 1s ease infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .progress-bar {
+            width: 250px;
+            height: 4px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+            margin: 30px auto 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: white;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        /* Login Panel */
+        .login-container {
+            display: none;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .login-header h2 {
+            font-size: 28px;
+            color: #1e3c72;
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .login-header.with-spacing {
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #ccc, transparent);
+            margin: 25px 0 20px 0;
+        }
+
+        .role-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .role-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .role-btn.active {
+            border-color: #2a5298;
+            background: #2a5298;
+            color: white;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #2a5298;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .error-msg {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .info-login {
+            margin-top: 25px;
+            font-size: 12px;
+            text-align: center;
+            color: #999;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        .info-login p {
+            margin: 5px 0;
+        }
+
+        /* Main App */
+        .app-container {
+            display: none;
+        }
+
+        .navbar {
+            background: #1e3c72;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-badge {
+            background: #3498db;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            background: #e74c3c;
+            border: none;
+            padding: 6px 15px;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .main-content {
+            padding: 20px;
+            background: #f0f2f5;
+            min-height: calc(100vh - 70px);
+        }
+
+        /* Sync Status */
+        .sync-status {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .sync-status.online {
+            border-left: 4px solid #27ae60;
+        }
+
+        .sync-status.offline {
+            border-left: 4px solid #e74c3c;
+        }
+
+        .sync-status.syncing {
+            border-left: 4px solid #f39c12;
+        }
+
+        .sync-btn-cloud {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .sync-btn-cloud:hover {
+            background: #219a52;
+        }
+
+        /* Spreadsheet Styles */
+        .spreadsheet-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .spreadsheet-toolbar {
+            padding: 12px 20px;
+            background: #f8f9fa;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .toolbar-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .toolbar-btn.excel {
+            background: #27ae60;
+        }
+
+        .toolbar-btn.excel:hover {
+            background: #219a52;
+        }
+
+        .toolbar-btn.reset {
+            background: #e74c3c;
+        }
+
+        .toolbar-btn.reset:hover {
+            background: #c0392b;
+        }
+
+        .spreadsheet-wrapper {
+            overflow-x: auto;
+        }
+
+        .spreadsheet-table {
+            border-collapse: collapse;
+            min-width: 100%;
+            font-size: 13px;
+        }
+
+        .spreadsheet-table th, .spreadsheet-table td {
+            border: 1px solid #ddd;
+            padding: 8px 6px;
+            min-width: 80px;
+            vertical-align: middle;
+        }
+
+        .spreadsheet-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            text-align: center;
+            padding: 10px 6px;
+        }
+
+        .spreadsheet-table td {
+            padding: 6px;
+        }
+
+        .number-cell {
+            text-align: right;
+            font-family: monospace;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .status-done { background: #d4edda; color: #155724; }
+        .status-progress { background: #fff3cd; color: #856404; }
+        .status-pending { background: #f8d7da; color: #721c24; }
+
+        .tabs-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .tabs-header {
+            display: flex;
+            background: #34495e;
+            overflow-x: auto;
+            gap: 2px;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: #2c3e50;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            background: #3498db;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        .search-input {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 12px;
+            width: 150px;
+        }
+
+        .reset-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: left;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* Loading */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .sync-icon {
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
@@ -695,7 +475,7 @@
 <!-- SPLASH SCREEN -->
 <div class="splash-screen" id="splash">
     <div class="splash-content">
-        <div class="splash-logo">📱</div>
+        <div class="splash-logo">☁️</div>
         <div class="splash-title">Daily Report System</div>
         <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
     </div>
@@ -706,7 +486,7 @@
     <div class="login-card">
         <div class="login-header with-spacing">
             <h2>Daily Report System</h2>
-            <p>Warehouse</p>
+            <p>Cloud Sync</p>
             <p style="font-size: 16px; color: #888;">PT. TRPC Manufacturing Indonesia</p>
         </div>
         
@@ -750,7 +530,7 @@
 <!-- MAIN APP -->
 <div class="app-container" id="appContainer">
     <div class="navbar">
-        <h2>📱 Daily Report System</h2>
+        <h2>📱 Daily Report System ☁️</h2>
         <div class="user-info">
             <span class="user-badge" id="userRoleBadge">Operator</span>
             <span id="userNameDisplay">User</span>
@@ -761,6 +541,11 @@
 </div>
 
 <script>
+    // ==================== KONFIGURASI GOOGLE SHEETS ====================
+    // GANTI URL_INI dengan URL Web App Anda dari Google Apps Script!
+    const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxMoeOgsjeLIQaoohO9uBe3xLro8BDvFKxw-t_6D5H9pBZPHerK1tVj2-hJF_aeMIlk/exec';
+    // ================================================================
+    
     // ==================== DATA ====================
     const operators = [
         { username: 'darma', password: 'rmd123', name: 'Darma', divisi: 'Raw Material' },
@@ -771,13 +556,13 @@
     
     let reports = [];
     let currentUser = null;
-    let transferScanner = null;
-    let isScanning = false;
     let currentDateFilter = '';
+    let isSyncing = false;
+    let lastSyncTime = null;
     
-    // Load data
+    // Load data dari localStorage dulu, lalu sync dari cloud
     function loadFromLocal() {
-        const saved = localStorage.getItem('daily_report_system');
+        const saved = localStorage.getItem('daily_report_cloud');
         if (saved) {
             const data = JSON.parse(saved);
             reports = data.reports || [];
@@ -787,24 +572,118 @@
     }
     
     function saveToLocal() {
-        localStorage.setItem('daily_report_system', JSON.stringify({ reports }));
+        localStorage.setItem('daily_report_cloud', JSON.stringify({ reports, lastSync: new Date().toISOString() }));
     }
     
-    // Reset semua data
-    function resetAllData() {
-        if (currentUser && currentUser.role === 'admin') {
-            if (confirm('⚠️ PERINGATAN: Ini akan menghapus SEMUA data laporan!\n\nAnda yakin ingin melanjutkan?')) {
-                localStorage.removeItem('daily_report_system');
-                reports = [];
-                saveToLocal();
-                if (currentUser.role === 'admin') {
-                    renderAdminPanel();
-                }
-                alert('✅ Semua data berhasil direset!');
+    // Sync ke Cloud (Google Sheets)
+    async function syncToCloud() {
+        if (isSyncing) return;
+        isSyncing = true;
+        updateSyncStatus('syncing');
+        
+        try {
+            // Kirim semua laporan ke cloud
+            for (const report of reports) {
+                await fetch(GOOGLE_SHEETS_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(report)
+                });
             }
-        } else {
-            alert('Reset data hanya dapat dilakukan oleh Admin!');
+            lastSyncTime = new Date();
+            updateSyncStatus('online');
+            showToast('✅ Data berhasil disinkronkan ke cloud!');
+        } catch (err) {
+            console.error('Sync error:', err);
+            updateSyncStatus('offline');
+            showToast('⚠️ Gagal sinkron ke cloud! Cek koneksi internet.');
         }
+        isSyncing = false;
+    }
+    
+    // Load dari Cloud (Google Sheets)
+    async function loadFromCloud() {
+        if (isSyncing) return;
+        isSyncing = true;
+        updateSyncStatus('syncing');
+        
+        try {
+            const response = await fetch(GOOGLE_SHEETS_URL);
+            const data = await response.json();
+            
+            if (data.data && data.data.length > 1) {
+                const cloudReports = [];
+                // Skip header row
+                for (let i = 1; i < data.data.length; i++) {
+                    const row = data.data[i];
+                    cloudReports.push({
+                        id: parseInt(row[0]),
+                        operator: row[1],
+                        operatorName: row[2],
+                        divisi: row[3],
+                        tanggal: row[4],
+                        aktivitas: row[5],
+                        mulai: row[6],
+                        selesai: row[7],
+                        totalJam: row[8],
+                        status: row[9],
+                        catatan: row[10] || '',
+                        timestamp: row[11]
+                    });
+                }
+                
+                // Merge data cloud dengan local (prioritas cloud untuk ID yang sama)
+                const mergedReports = [...cloudReports];
+                for (const localReport of reports) {
+                    const exists = cloudReports.some(cr => cr.id === localReport.id);
+                    if (!exists) {
+                        mergedReports.push(localReport);
+                    }
+                }
+                reports = mergedReports;
+                saveToLocal();
+            }
+            
+            lastSyncTime = new Date();
+            updateSyncStatus('online');
+            showToast('✅ Data berhasil dimuat dari cloud!');
+            return true;
+        } catch (err) {
+            console.error('Load from cloud error:', err);
+            updateSyncStatus('offline');
+            showToast('⚠️ Gagal memuat dari cloud! Menggunakan data lokal.');
+            return false;
+        }
+        isSyncing = false;
+    }
+    
+    function updateSyncStatus(status) {
+        const syncDiv = document.getElementById('syncStatus');
+        if (syncDiv) {
+            syncDiv.className = `sync-status ${status}`;
+            const statusText = syncDiv.querySelector('.status-text');
+            const icon = syncDiv.querySelector('.sync-icon');
+            
+            if (status === 'online') {
+                statusText.innerHTML = '☁️ Cloud: Terhubung';
+                if (icon) icon.style.display = 'none';
+            } else if (status === 'offline') {
+                statusText.innerHTML = '⚠️ Cloud: Offline (Menggunakan lokal)';
+                if (icon) icon.style.display = 'none';
+            } else if (status === 'syncing') {
+                statusText.innerHTML = '🔄 Sinkronisasi...';
+                if (icon) icon.style.display = 'inline-block';
+            }
+        }
+    }
+    
+    function showToast(message) {
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:white; padding:12px 24px; border-radius:8px; z-index:10000; font-size:14px;';
+        toast.innerHTML = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
     }
     
     function calculateTotalJam(mulai, selesai) {
@@ -828,301 +707,6 @@
         const operatorCode = operatorName.toUpperCase().substring(0, 5);
         const divisiCode = divisi.substring(0, 2).toUpperCase();
         return `${operatorCode}_${tanggal.replace(/\//g, '-')}_${divisiCode}_${id}`;
-    }
-    
-    function generateQRCode(element, text, size = 200) {
-        if (!element) return;
-        element.innerHTML = '';
-        const img = document.createElement('img');
-        img.src = `https://quickchart.io/qr?text=${encodeURIComponent(text)}&size=${size}&margin=2`;
-        img.style.width = `${size}px`;
-        img.style.height = `${size}px`;
-        img.style.display = 'block';
-        img.style.margin = '0 auto';
-        img.alt = 'QR Code';
-        element.appendChild(img);
-    }
-    
-    // ==================== FITUR TRANSFER DATA ANTAR PERANGKAT ====================
-    
-    function getExportData() {
-        const userReports = reports.filter(r => r.operator === currentUser.username);
-        return {
-            type: 'TRANSFER_DATA',
-            version: '1.0',
-            reports: userReports,
-            operatorName: currentUser.name,
-            operatorDivisi: currentUser.divisi,
-            exportDate: new Date().toISOString(),
-            totalLaporan: userReports.length
-        };
-    }
-    
-    function sendViaWhatsApp() {
-        const data = getExportData();
-        const dataStr = JSON.stringify(data);
-        const compressedData = btoa(encodeURIComponent(dataStr));
-        
-        const message = `📊 *TRANSFER DATA LAPORAN - ${currentUser.name}*\n` +
-                       `📅 Tanggal: ${new Date().toLocaleDateString('id')}\n` +
-                       `📋 Divisi: ${currentUser.divisi}\n` +
-                       `📝 Total Laporan: ${data.totalLaporan}\n\n` +
-                       `*CARA IMPORT:*\n` +
-                       `1. Login sebagai Admin\n` +
-                       `2. Klik "📥 Import Data"\n` +
-                       `3. Pilih "Paste dari Clipboard"\n` +
-                       `4. Tempel kode di bawah ini\n\n` +
-                       `*KODE DATA:*\n${compressedData}`;
-        
-        window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
-    }
-    
-    function sendViaEmail() {
-        const data = getExportData();
-        const dataStr = JSON.stringify(data);
-        const compressedData = btoa(encodeURIComponent(dataStr));
-        
-        let emailBody = `TRANSFER DATA LAPORAN HARIAN\n\n`;
-        emailBody += `Operator: ${currentUser.name}\n`;
-        emailBody += `Divisi: ${currentUser.divisi}\n`;
-        emailBody += `Tanggal Export: ${new Date().toLocaleString('id')}\n`;
-        emailBody += `Total Laporan: ${data.totalLaporan}\n\n`;
-        emailBody += `KODE DATA:\n${compressedData}`;
-        
-        window.open(`mailto:?subject=Transfer%20Data%20Laporan%20${currentUser.name}&body=${encodeURIComponent(emailBody)}`, '_blank');
-    }
-    
-    async function copyToClipboard() {
-        const data = getExportData();
-        const dataStr = JSON.stringify(data);
-        const compressedData = btoa(encodeURIComponent(dataStr));
-        
-        try {
-            await navigator.clipboard.writeText(compressedData);
-            alert('✅ Data berhasil disalin ke clipboard!');
-        } catch (err) {
-            const textarea = document.createElement('textarea');
-            textarea.value = compressedData;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            alert('✅ Data berhasil disalin ke clipboard!');
-        }
-    }
-    
-    function generateTransferQR() {
-        const data = getExportData();
-        const dataStr = JSON.stringify(data);
-        const compressedData = btoa(encodeURIComponent(dataStr));
-        const qrText = `TRANSFER_DATA:${compressedData}`;
-        
-        const modalHtml = `
-            <div id="transferModal" class="modal">
-                <div class="modal-content qr-transfer-container">
-                    <h3>📱 QR Code Transfer Data</h3>
-                    <p>Scan QR Code ini dengan Admin untuk mentransfer data</p>
-                    <p><strong>${currentUser.name}</strong> - ${currentUser.divisi}</p>
-                    <p><small>📝 ${data.totalLaporan} laporan akan ditransfer</small></p>
-                    <div id="transferQRCode" style="padding:20px;"></div>
-                    <button onclick="closeTransferModal()" style="margin-top:10px; padding:8px 20px; background:#e74c3c; color:white; border:none; border-radius:8px;">Tutup</button>
-                </div>
-            </div>
-        `;
-        
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        
-        const img = document.createElement('img');
-        img.src = `https://quickchart.io/qr?text=${encodeURIComponent(qrText)}&size=250&margin=2`;
-        img.style.width = '250px';
-        img.style.height = '250px';
-        img.style.display = 'block';
-        img.style.margin = '0 auto';
-        document.getElementById("transferQRCode").appendChild(img);
-    }
-    
-    function closeTransferModal() {
-        const modal = document.getElementById('transferModal');
-        if (modal) modal.remove();
-    }
-    
-    // SCAN QR TRANSFER (Admin)
-    async function startTransferScanner() {
-        const modalHtml = `
-            <div id="transferScanModal" class="modal">
-                <div class="modal-content" style="max-width:400px;">
-                    <h3>📷 Scan QR Transfer dari Operator</h3>
-                    <p>Arahkan kamera ke QR Code yang ditampilkan operator</p>
-                    <div id="transferPreview" style="width:100%; max-width:300px; margin:0 auto;"></div>
-                    <div id="transferScanResult" style="margin-top:10px; font-size:12px; padding:10px;"></div>
-                    <button onclick="closeTransferScanModal()" style="margin-top:15px; padding:8px 20px; background:#e74c3c; color:white; border:none; border-radius:8px;">Tutup</button>
-                </div>
-            </div>
-        `;
-        
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        
-        transferScanner = new Html5Qrcode("transferPreview");
-        try {
-            await transferScanner.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 250, height: 250 } },
-                (decodedText) => {
-                    if (decodedText.startsWith('TRANSFER_DATA:')) {
-                        const encodedData = decodedText.replace('TRANSFER_DATA:', '');
-                        try {
-                            const jsonData = decodeURIComponent(atob(encodedData));
-                            const transferData = JSON.parse(jsonData);
-                            
-                            if (transferData.type === 'TRANSFER_DATA' && transferData.reports) {
-                                let newCount = 0;
-                                transferData.reports.forEach(newReport => {
-                                    const exists = reports.some(r => r.id === newReport.id);
-                                    if (!exists) {
-                                        reports.push(newReport);
-                                        newCount++;
-                                    }
-                                });
-                                saveToLocal();
-                                
-                                document.getElementById('transferScanResult').innerHTML = `
-                                    <div style="background:#d4edda; color:#155724; padding:10px; border-radius:8px;">
-                                        ✅ BERHASIL! ${newCount} laporan diimport dari ${transferData.operatorName}
-                                    </div>
-                                `;
-                                
-                                setTimeout(() => {
-                                    transferScanner.stop();
-                                    closeTransferScanModal();
-                                    renderAdminPanel();
-                                }, 2000);
-                            } else {
-                                throw new Error("Format data tidak valid");
-                            }
-                        } catch (e) {
-                            document.getElementById('transferScanResult').innerHTML = `
-                                <div style="background:#f8d7da; color:#721c24; padding:10px; border-radius:8px;">
-                                    ❌ Gagal membaca data: ${e.message}
-                                </div>
-                            `;
-                        }
-                    } else {
-                        document.getElementById('transferScanResult').innerHTML = `
-                            <div style="background:#fff3cd; color:#856404; padding:10px; border-radius:8px;">
-                                ⚠️ Bukan QR Transfer yang valid
-                            </div>
-                        `;
-                    }
-                },
-                () => {}
-            );
-        } catch (err) {
-            document.getElementById('transferScanResult').innerHTML = `
-                <div style="background:#f8d7da; color:#721c24; padding:10px; border-radius:8px;">
-                    ❌ Gagal mengakses kamera: ${err}
-                </div>
-            `;
-        }
-    }
-    
-    function closeTransferScanModal() {
-        if (transferScanner) {
-            transferScanner.stop().catch(() => {});
-            transferScanner = null;
-        }
-        const modal = document.getElementById('transferScanModal');
-        if (modal) modal.remove();
-    }
-    
-    // Import data manual (Admin)
-    function showImportModal() {
-        const modalHtml = `
-            <div id="importModal" class="modal">
-                <div class="modal-content" style="max-width:500px;">
-                    <h3>📥 Import Data</h3>
-                    <div class="import-area" onclick="showPasteArea()">
-                        📋 <strong>Paste dari Clipboard</strong>
-                    </div>
-                    <div class="import-area" onclick="document.getElementById('importFileInput').click()">
-                        📁 <strong>Upload File JSON</strong>
-                    </div>
-                    <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="importFromFile(this.files[0])">
-                    <div id="importTextAreaArea" style="margin-top:15px; display:none;">
-                        <textarea id="importPasteData" rows="3" style="width:100%; padding:8px; border-radius:8px; border:1px solid #ddd;" placeholder="Tempel kode data di sini..."></textarea>
-                        <button onclick="processPastedData()" style="margin-top:10px; padding:6px 12px; background:#27ae60; color:white; border:none; border-radius:6px;">Proses Import</button>
-                    </div>
-                    <button onclick="closeImportModal()" style="margin-top:15px; padding:8px 20px; background:#95a5a6; color:white; border:none; border-radius:8px;">Tutup</button>
-                </div>
-            </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-    }
-    
-    function showPasteArea() {
-        const area = document.getElementById('importTextAreaArea');
-        if (area) area.style.display = 'block';
-    }
-    
-    function closeImportModal() {
-        const modal = document.getElementById('importModal');
-        if (modal) modal.remove();
-    }
-    
-    async function processPastedData() {
-        const pasteData = document.getElementById('importPasteData').value.trim();
-        if (!pasteData) {
-            alert('❌ Tidak ada data!');
-            return;
-        }
-        try {
-            const decodedData = decodeURIComponent(atob(pasteData));
-            const importedData = JSON.parse(decodedData);
-            if (importedData.type === 'TRANSFER_DATA' && importedData.reports) {
-                let newCount = 0;
-                importedData.reports.forEach(newReport => {
-                    if (!reports.some(r => r.id === newReport.id)) {
-                        reports.push(newReport);
-                        newCount++;
-                    }
-                });
-                saveToLocal();
-                closeImportModal();
-                alert(`✅ Import berhasil! ${newCount} laporan baru ditambahkan`);
-                renderAdminPanel();
-            } else {
-                alert('❌ Format data tidak valid!');
-            }
-        } catch (err) {
-            alert('❌ Gagal membaca data!');
-        }
-    }
-    
-    function importFromFile(file) {
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                const importedData = JSON.parse(e.target.result);
-                if (importedData.type === 'TRANSFER_DATA' && importedData.reports) {
-                    let newCount = 0;
-                    importedData.reports.forEach(newReport => {
-                        if (!reports.some(r => r.id === newReport.id)) {
-                            reports.push(newReport);
-                            newCount++;
-                        }
-                    });
-                    saveToLocal();
-                    closeImportModal();
-                    alert(`✅ Import berhasil! ${newCount} laporan baru ditambahkan`);
-                    renderAdminPanel();
-                } else {
-                    alert('❌ Format file tidak valid!');
-                }
-            } catch (err) {
-                alert('❌ Gagal membaca file!');
-            }
-        };
-        reader.readAsText(file);
     }
     
     // ==================== EXPORT XLSX ====================
@@ -1199,29 +783,35 @@
         });
         
         let tableHtml = `
+            <div class="sync-status online" id="syncStatus">
+                <span class="status-text">☁️ Cloud: Terhubung</span>
+                <button class="sync-btn-cloud" onclick="syncToCloud()">🔄 Sync ke Cloud</button>
+            </div>
+            
             <div class="spreadsheet-card">
                 <div class="spreadsheet-toolbar">
                     <button class="toolbar-btn" onclick="addRowOperator()">➕ Tambah Baris Baru</button>
                     <button class="toolbar-btn excel" onclick="exportOperatorToExcel('${currentUser.username}')">📎 Export XLSX</button>
-                    
-                    <div class="btn-group" style="margin-left: auto;">
-                        <button class="toolbar-btn whatsapp" onclick="sendViaWhatsApp()">📱 Kirim WA</button>
-                        <button class="toolbar-btn email" onclick="sendViaEmail()">✉️ Kirim Email</button>
-                        <button class="toolbar-btn copy" onclick="copyToClipboard()">📋 Salin Data</button>
-                        <button class="toolbar-btn qr-transfer" onclick="generateTransferQR()">📱 QR Transfer</button>
+                    <div class="search-container">
+                        <select id="dateFilterSelect" class="search-input" onchange="filterByDate(this.value)">
+                            <option value="">Semua Tanggal</option>
+                            ${availableDates.map(date => `<option value="${date}" ${currentDateFilter === date ? 'selected' : ''}>${date}</option>`).join('')}
+                        </select>
+                        ${currentDateFilter ? `<button class="toolbar-btn" onclick="clearDateFilter()">✖️ Hapus Filter</button>` : ''}
                     </div>
                 </div>
                 <div class="spreadsheet-wrapper">
                     <table class="spreadsheet-table">
                         <thead>
-                            <tr><th>Tanggal</th><th>Aktivitas</th><th>Mulai</th><th>Selesai</th><th>Total Jam</th><th>Status</th><th>Catatan</th><th>Aksi</th></tr>
+                            <tr><th>Tanggal</th><th>Kode Unik</th><th>Aktivitas</th><th>Mulai</th><th>Selesai</th><th>Total Jam</th><th>Status</th><th>Catatan</th><th>Aksi</th></tr>
                         </thead>
                         <tbody>
                             ${filteredReports.map(r => {
                                 const uniqueCode = getDailyUniqueCode(r.operatorName, r.tanggal, r.divisi, r.id);
                                 return `
                                     <tr>
-                                        <td contenteditable="true" onblur="updateField(${r.id}, 'tanggal', this.textContent)">${r.tanggal}<br><small style="font-size:9px;">${uniqueCode}</small></td>
+                                        <td contenteditable="true" onblur="updateField(${r.id}, 'tanggal', this.textContent)">${r.tanggal}</td>
+                                        <td><small>${uniqueCode}</small></td>
                                         <td contenteditable="true" onblur="updateField(${r.id}, 'aktivitas', this.textContent)">${r.aktivitas || '(kosong)'}</td>
                                         <td contenteditable="true" onblur="updateField(${r.id}, 'mulai', this.textContent); updateTotalJamField(${r.id})">${r.mulai || '-'}</td>
                                         <td contenteditable="true" onblur="updateField(${r.id}, 'selesai', this.textContent); updateTotalJamField(${r.id})">${r.selesai || '-'}</td>
@@ -1242,10 +832,10 @@
                                             <button onclick="clearRow(${r.id})" style="background:#e67e22; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; margin-right:4px; font-size:11px;">🗑️ Kosongkan</button>
                                             <button onclick="deleteRow(${r.id})" style="background:#e74c3c; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">❌ Hapus</button>
                                         </td>
-                                    </tr>
+                                    </table>
                                 `;
                             }).join('')}
-                            ${filteredReports.length === 0 ? '<tr><td colspan="8" style="text-align:center; padding: 30px;">📋 Belum ada data. Klik "Tambah Baris Baru" untuk memulai</td></tr>' : ''}
+                            ${filteredReports.length === 0 ? '<tr><td colspan="9" style="text-align:center; padding: 30px;">📋 Belum ada data. Klik "Tambah Baris Baru" untuk memulai</td>' : ''}
                         </tbody>
                     </table>
                 </div>
@@ -1274,6 +864,8 @@
             }
             saveToLocal();
             renderOperatorPanel();
+            // Auto sync ke cloud setelah edit
+            setTimeout(() => syncToCloud(), 500);
         }
     };
     
@@ -1283,6 +875,7 @@
             report.totalJam = calculateTotalJam(report.mulai, report.selesai);
             saveToLocal();
             renderOperatorPanel();
+            setTimeout(() => syncToCloud(), 500);
         }
     };
     
@@ -1312,6 +905,7 @@
         setTimeout(() => {
             const rows = document.querySelectorAll('.spreadsheet-table tbody tr');
             if (rows.length > 0) rows[rows.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            syncToCloud();
         }, 100);
         
         alert(`✅ Baris baru untuk tanggal ${today} telah ditambahkan!`);
@@ -1328,6 +922,7 @@
             report.status = 'Pending';
             saveToLocal();
             renderOperatorPanel();
+            setTimeout(() => syncToCloud(), 500);
             alert('Isi baris telah dikosongkan');
         }
     };
@@ -1337,6 +932,7 @@
             reports = reports.filter(r => r.id !== rowId);
             saveToLocal();
             renderOperatorPanel();
+            setTimeout(() => syncToCloud(), 500);
             alert('Baris telah dihapus');
         }
     };
@@ -1344,13 +940,10 @@
     // ==================== ADMIN PANEL ====================
     function renderAdminPanel() {
         let content = `
-            <div class="scanner-container">
-                <div class="qr-title">📷 Transfer Data dari Operator</div>
-                <div class="scanner-buttons">
-                    <button class="camera-btn start" onclick="startTransferScanner()">📱 Scan QR Transfer</button>
-                    <button class="camera-btn" onclick="showImportModal()" style="background:#f39c12;">📥 Import Data Manual</button>
-                </div>
-                <div class="scan-result info" id="scanResult">🔍 Klik "Scan QR Transfer" untuk mulai</div>
+            <div class="sync-status online" id="syncStatus">
+                <span class="status-text">☁️ Cloud: Terhubung</span>
+                <button class="sync-btn-cloud" onclick="loadFromCloud()">📥 Muat dari Cloud</button>
+                <button class="sync-btn-cloud" onclick="syncToCloud()" style="background:#3498db;">📤 Sync ke Cloud</button>
             </div>
             
             <div class="qr-container">
@@ -1360,10 +953,10 @@
                     <button class="toolbar-btn excel" onclick="exportAllToExcel()">📎 Export Semua XLSX</button>
                 </div>
                 <div class="reset-info">
-                    💡 <strong>Cara Transfer Data dari Operator:</strong><br>
-                    • Operator klik "📱 QR Transfer" → Tunjukkan QR Code ke Admin<br>
-                    • Admin klik "📱 Scan QR Transfer" → Scan QR Code operator<br>
-                    • Atau operator kirim data via WA/Email, Admin import manual
+                    💡 <strong>Cara Sinkronisasi Cloud:</strong><br>
+                    • Semua perubahan otomatis tersimpan ke cloud<br>
+                    • Admin klik "📥 Muat dari Cloud" untuk melihat data terbaru dari operator<br>
+                    • Data bisa diakses dari perangkat manapun dengan login yang sama
                 </div>
             </div>
             
@@ -1382,7 +975,7 @@
                             <div class="spreadsheet-wrapper">
                                 <table class="spreadsheet-table">
                                     <thead>
-                                        <tr><th>Tanggal</th><th>Unique Code</th><th>Aktivitas</th><th>Mulai</th><th>Selesai</th><th>Total Jam</th><th>Status</th><th>Catatan</th></tr>
+                                        <tr><th>Tanggal</th><th>Kode Unik</th><th>Aktivitas</th><th>Mulai</th><th>Selesai</th><th>Total Jam</th><th>Status</th><th>Catatan</th></tr>
                                     </thead>
                                     <tbody>
                                         ${opReports.map(r => {
@@ -1400,7 +993,7 @@
                                                 </tr>
                                             `;
                                         }).join('')}
-                                        ${opReports.length === 0 ? '<tr><td colspan="8" style="text-align:center;">Belum ada data laporan</td></tr>' : ''}
+                                        ${opReports.length === 0 ? '<tr><td colspan="8" style="text-align:center;">Belum ada data laporan</td>' : ''}
                                     </tbody>
                                 </table>
                             </div>
@@ -1411,6 +1004,20 @@
         `;
         
         document.getElementById('mainContent').innerHTML = content;
+    }
+    
+    function resetAllData() {
+        if (currentUser && currentUser.role === 'admin') {
+            if (confirm('⚠️ PERINGATAN: Ini akan menghapus SEMUA data laporan!\n\nAnda yakin ingin melanjutkan?')) {
+                reports = [];
+                saveToLocal();
+                syncToCloud();
+                renderAdminPanel();
+                alert('✅ Semua data berhasil direset!');
+            }
+        } else {
+            alert('Reset data hanya dapat dilakukan oleh Admin!');
+        }
     }
     
     window.switchTab = function(tabId) {
@@ -1452,11 +1059,14 @@
         }
     }
     
-    function showMainApp() {
+    async function showMainApp() {
         document.getElementById('loginPanel').style.display = 'none';
         document.getElementById('appContainer').style.display = 'block';
         document.getElementById('userRoleBadge').textContent = currentUser.role === 'admin' ? '👑 Admin' : '👤 Operator';
         document.getElementById('userNameDisplay').textContent = currentUser.name;
+        
+        // Load data dari cloud terlebih dahulu
+        await loadFromCloud();
         
         if (currentUser.role === 'admin') {
             renderAdminPanel();
@@ -1467,10 +1077,7 @@
     }
     
     async function logout() {
-        if (transferScanner) {
-            await transferScanner.stop().catch(() => {});
-            transferScanner = null;
-        }
+        await syncToCloud();
         currentUser = null;
         currentDateFilter = '';
         document.getElementById('appContainer').style.display = 'none';
@@ -1532,17 +1139,8 @@
     window.resetAllData = resetAllData;
     window.exportAllToExcel = exportAllToExcel;
     window.exportOperatorToExcel = exportOperatorToExcel;
-    window.sendViaWhatsApp = sendViaWhatsApp;
-    window.sendViaEmail = sendViaEmail;
-    window.copyToClipboard = copyToClipboard;
-    window.generateTransferQR = generateTransferQR;
-    window.closeTransferModal = closeTransferModal;
-    window.startTransferScanner = startTransferScanner;
-    window.closeTransferScanModal = closeTransferScanModal;
-    window.showImportModal = showImportModal;
-    window.closeImportModal = closeImportModal;
-    window.showPasteArea = showPasteArea;
-    window.processPastedData = processPastedData;
+    window.syncToCloud = syncToCloud;
+    window.loadFromCloud = loadFromCloud;
     window.switchTab = switchTab;
 </script>
 </body>
